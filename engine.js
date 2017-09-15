@@ -4,7 +4,8 @@ var components = [
     "Draggable",
     "Dragged",
     "Fixed",
-    "Input"
+    "Input",
+    "Collidable"
 ];
 //calculate signatures for all components
 var componentSignatureMap = {};
@@ -13,8 +14,9 @@ for (var i = 0; i < components.length; i++) {
     componentSignatureMap[components[i]] = 0b1 << bitsToShift;
 }
 
-function Entity(id) {
+function Entity(id, name) {
     this.id = id;
+    this.name = name;
     this.signature = 0b0;
     this.components = {};
 
@@ -32,9 +34,9 @@ function EntityManager() {
 }
 EntityManager.currentId = -1;
 EntityManager.entities = {};
-EntityManager.createEntity = function () {
+EntityManager.createEntity = function (name) {
     EntityManager.currentId += 1;
-    var entity = new Entity(EntityManager.currentId);
+    var entity = new Entity(EntityManager.currentId, name);
     EntityManager.entities[EntityManager.currentId] = entity;
     SystemManager.checkEntityForAddition(entity);
     return entity;
