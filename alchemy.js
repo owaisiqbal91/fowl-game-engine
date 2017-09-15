@@ -22,10 +22,13 @@ function Dragged(xOffset, yOffset) {
 
 function Fixed() {}
 
+function Input() {}
+
 class RenderSystem extends System {
     constructor() {
-        super(0b11000);
+        super(0b110000);
     }
+
     update() {
         canvas.width = canvas.width;
 
@@ -39,79 +42,175 @@ class RenderSystem extends System {
     }
 }
 
-//make below class into more generic later
 class InputSystem extends System {
     constructor() {
-        super(0b11100);
+        super(0b110001);
     }
+
     init() {
         canvas.addEventListener("mousedown", this.handleMouseDown.bind(this), false);
+        canvas.addEventListener("mouseup", this.handleMouseUp.bind(this), false);
+        canvas.addEventListener("mousemove", this.handleMouseMove.bind(this), false);
     }
-    update() {}
+
+    update() {
+    }
+
+    handleMouseMove(e) {
+        var mouseX = this.getMouseX(e);
+        var mouseY = this.getMouseY(e);
+
+        PubSub.publish("mouseMove", {"mouseX": mouseX, "mouseY": mouseY});
+    }
+
     handleMouseDown(e) {
+        var mouseX = this.getMouseX(e);
+        var mouseY = this.getMouseY(e);
+
+        var entity = this.getInputEntity(mouseX, mouseY);
+        if (entity !== undefined) {
+            PubSub.publish("mouseDown", {"mouseX": mouseX, "mouseY": mouseY, "entity": entity});
+        }
+    }
+
+    handleMouseUp(e) {
+        var mouseX = this.getMouseX(e);
+        var mouseY = this.getMouseY(e);
+
+        var entity = this.getInputEntity(mouseX, mouseY);
+        if (entity !== undefined) {
+            PubSub.publish("mouseUp", {"mouseX": mouseX, "mouseY": mouseY, "entity": entity});
+        }
+    }
+
+    getInputEntity(mouseX, mouseY) {
         for (var key in this.relevantEntitiesMap) {
             var entity = this.relevantEntitiesMap[key];
             var pc = entity.components[PositionComponent.prototype.constructor.name];
             var rc = entity.components[RenderComponent.prototype.constructor.name];
 
-            var mouseX = getMouseX(e);
-            var mouseY = getMouseY(e);
-            if(this.checkEntity(mouseX, mouseY, pc.x, pc.y, rc.image.width, rc.image.height)){
-                entity.addComponent(new Dragged(mouseX - pc.x, mouseY - pc.y));
+            if (this.checkEntity(mouseX, mouseY, pc.x, pc.y, rc.image.width, rc.image.height)) {
+                return entity;
             }
         }
     }
+
     checkEntity(mouseX, mouseY, entityX, entityY, entityWidth, entityHeight) {
         return (mouseX >= entityX && mouseX <= (entityX + entityWidth)
-        && mouseY >= entityY && mouseY <= (entityY + entityHeight));
+            && mouseY >= entityY && mouseY <= (entityY + entityHeight));
+    }
+
+    getMouseX(e) {
+        return e.clientX - canvas.getBoundingClientRect().left;
+    }
+
+    getMouseY(e) {
+        return e.clientY - canvas.getBoundingClientRect().top;
     }
 }
 
-class DragSystem extends System {
-    constructor(){
-        super(0b10110);
+class DraggableSystem extends System {
+    constructor() {
+        super(0b111000);
     }
+
     init() {
-        canvas.addEventListener("mousemove", this.mouseMove.bind(this), false);
-        canvas.addEventListener("mouseup", this.mouseUp.bind(this), false);
+        PubSub.subscribe("mouseDown", this.mouseDown.bind(this));
     }
-    update() {}
-    mouseMove(e) {
+
+    update() {
+    }
+
+    mouseDown(topic, data) {
+        var entity = data["entity"];
+        if (this.relevantEntitiesMap[entity.id]) {
+            var pc = entity.components[PositionComponent.prototype.constructor.name];
+            entity.addComponent(new Dragged(data["mouseX"] - pc.x, data["mouseY"] - pc.y));
+        }
+    }
+}
+
+class DraggedSystem extends System {
+    constructor() {
+        super(0b110100);
+    }
+
+    init() {
+        PubSub.subscribe("mouseMove", this.mouseMove.bind(this));
+        PubSub.subscribe("mouseUp", this.mouseUp.bind(this));
+    }
+
+    update() {
+    }
+
+    mouseMove(topic, data) {
         for (var key in this.relevantEntitiesMap) {
             var entity = this.relevantEntitiesMap[key];
             var pc = entity.components[PositionComponent.prototype.constructor.name];
             var dragged = entity.components[Dragged.prototype.constructor.name];
 
-            var mouseX = getMouseX(e);
-            var mouseY = getMouseY(e);
-            pc.x = mouseX - dragged.xOffset;
-            pc.y = mouseY - dragged.yOffset;
+            pc.x = data["mouseX"] - dragged.xOffset;
+            pc.y = data["mouseY"] - dragged.yOffset;
         }
     }
-    mouseUp(e) {
-        for(var key in this.relevantEntitiesMap) {
-            var entity = this.relevantEntitiesMap[key];
+
+    mouseUp(topic, data) {
+        var entity = data["entity"];
+        if (this.relevantEntitiesMap[entity.id]) {
             var dragged = entity.components[Dragged.prototype.constructor.name];
             entity.removeComponent(dragged);
+
+            //check for out of bounds
+            var pc = entity.components[PositionComponent.prototype.constructor.name];
+            var rc = entity.components[RenderComponent.prototype.constructor.name];
+
+            if(pc.x < 0 || (pc.x + rc.image.width) > (canvas.getBoundingClientRect().right - 100)
+                || pc.y < 0 || (pc.y + rc.image.height) > canvas.getBoundingClientRect().bottom){
+                EntityManager.removeEntity(entity);
+            }
         }
     }
 }
 
-function getMouseX(e) {
-    return e.clientX - canvas.getBoundingClientRect().left;
-}
-function getMouseY(e) {
-    return e.clientY - canvas.getBoundingClientRect().top;
+class FixedSystem extends System {
+    constructor() {
+        super(0b110010);
+    }
+
+    init() {
+        PubSub.subscribe("mouseDown", this.mouseDown.bind(this));
+    }
+
+    update() {
+    }
+
+    mouseDown(topic, data) {
+        var entity = data["entity"];
+        if (this.relevantEntitiesMap[entity.id]) {
+            var pc = entity.components[PositionComponent.prototype.constructor.name];
+            var rc = entity.components[RenderComponent.prototype.constructor.name];
+
+            var newDraggableEntity = EntityManager.createEntity();
+            newDraggableEntity.addComponent(new PositionComponent(pc.x, pc.y));
+            newDraggableEntity.addComponent(rc);
+            newDraggableEntity.addComponent(new Input());
+            newDraggableEntity.addComponent(new Draggable());
+            newDraggableEntity.addComponent(new Dragged(data["mouseX"] - pc.x, data["mouseY"] - pc.y));
+        }
+    }
 }
 
 function init() {
     var fireEntity = EntityManager.createEntity();
-    fireEntity.addComponent(new PositionComponent(100, 100));
+    fireEntity.addComponent(new PositionComponent(700, 100));
     fireEntity.addComponent(new RenderComponent(74, 74, "images/fire.png"));
-    fireEntity.addComponent(new Draggable());
+    fireEntity.addComponent(new Input());
+    fireEntity.addComponent(new Fixed());
     SystemManager.addSystem(new RenderSystem());
     SystemManager.addSystem(new InputSystem());
-    SystemManager.addSystem(new DragSystem());
+    SystemManager.addSystem(new FixedSystem());
+    SystemManager.addSystem(new DraggableSystem());
+    SystemManager.addSystem(new DraggedSystem());
 }
 
 init();

@@ -3,7 +3,8 @@ var components = [
     "RenderComponent",
     "Draggable",
     "Dragged",
-    "Fixed"
+    "Fixed",
+    "Input"
 ];
 //calculate signatures for all components
 var componentSignatureMap = {};
@@ -33,9 +34,17 @@ EntityManager.currentId = -1;
 EntityManager.entities = {};
 EntityManager.createEntity = function () {
     EntityManager.currentId += 1;
-    var entity = new Entity(EntityManager.currentId)
+    var entity = new Entity(EntityManager.currentId);
     EntityManager.entities[EntityManager.currentId] = entity;
+    SystemManager.checkEntityForAddition(entity);
     return entity;
+}
+EntityManager.removeEntity = function (entity) {
+    delete EntityManager.entities[entity.id];
+    entity.components = [];
+    entity.signature = 0b0;
+    delete markedForRemoval[entity.id];
+    SystemManager.checkEntityForRemoval(entity);
 }
 EntityManager.addComponent = function (entity, component) {
     var componentName = component.constructor.name;
@@ -68,14 +77,6 @@ EntityManager.sweepRemovalOfComponents = function() {
     }
     markedForRemoval = {};
 }
-/*EntityManager.removeComponent = function (entity, component) {
-    var componentName = component.constructor.name;
-    var componentSignature = componentSignatureMap[componentName];
-    delete entity.components[componentName];
-    entity.signature = entity.signature ^ componentSignature;
-
-    SystemManager.checkEntityForRemoval(entity);
-}*/
 
 function System(signature){
     this.relevantEntitiesMap = {};
