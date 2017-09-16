@@ -92,6 +92,7 @@ class InputSystem extends System {
         var mouseY = this.getMouseY(e);
 
         var entity = this.getInputEntity(mouseX, mouseY);
+        console.log(entity);
         if (entity) {
             PubSub.publish("mouseUp", {"mouseX": mouseX, "mouseY": mouseY, "entity": entity});
         }
@@ -106,8 +107,10 @@ class InputSystem extends System {
 
             var rc = entity.components[RenderComponent.prototype.constructor.name];
             if (this.checkEntity(mouseX, mouseY, pc.x, pc.y, rc.image.width, rc.image.height)) {
-                if (!topmostEntity || pc.z > topmostZ)
+                if (!topmostEntity || pc.z > topmostZ) {
                     topmostEntity = entity;
+                    topmostZ = pc.z;
+                }
             }
         }
         return topmostEntity;
@@ -276,6 +279,7 @@ class CombiningSystem extends System {
             "fire + water": "steam",
             "water + fire": "steam"
         }
+        this.elementsFound = {};
     }
 
     init() {
@@ -288,16 +292,20 @@ class CombiningSystem extends System {
     combineElements(topic, data) {
         var combined = this.rules[data.entity1.name + " + " + data.entity2.name];
         if (combined) {
-            console.log(combined);
             EntityManager.removeEntity(data.entity1);
             EntityManager.removeEntity(data.entity2);
+
+            if(!this.elementsFound[combined]){
+                this.elementsFound[combined] = true;
+                createFixedEntity(combined);
+            }
         }
     }
 }
 
 function init() {
-    createFixedEntity("fire", 0);
-    createFixedEntity("water", 1);
+    createFixedEntity("fire");
+    createFixedEntity("water");
     SystemManager.addSystem(new RenderSystem());
     SystemManager.addSystem(new InputSystem());
     SystemManager.addSystem(new FixedSystem());
@@ -307,12 +315,14 @@ function init() {
     SystemManager.addSystem(new CombiningSystem());
 }
 
-function createFixedEntity(name, offset) {
+var currentOffset = 0;
+function createFixedEntity(name) {
     var entity = EntityManager.createEntity(name);
-    entity.addComponent(new PositionComponent(700, 50 + offset * 100));
+    entity.addComponent(new PositionComponent(700, 50 + currentOffset * 100));
     entity.addComponent(new RenderComponent(74, 74, "images/" + name + ".png"));
     entity.addComponent(new Input());
     entity.addComponent(new Fixed());
+    currentOffset += 1;
 }
 
 init();
