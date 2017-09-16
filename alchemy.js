@@ -14,7 +14,7 @@ function Fixed() {
 
 class DraggableSystem extends System {
     constructor() {
-        super(0b1110000);
+        super(0b1100100);
     }
 
     init() {
@@ -37,7 +37,7 @@ class DraggableSystem extends System {
 
 class DraggedSystem extends System {
     constructor() {
-        super(0b1101000);
+        super(0b1100010);
     }
 
     init() {
@@ -82,7 +82,7 @@ class DraggedSystem extends System {
 
 class FixedSystem extends System {
     constructor() {
-        super(0b1100100);
+        super(0b1100001);
     }
 
     init() {
@@ -113,7 +113,7 @@ class FixedSystem extends System {
 
 class CombiningSystem extends System {
     constructor() {
-        super(0b1100001);
+        super(0b1101000);
         this.rules = {
             "fire + water": "steam",
             "water + fire": "steam"
@@ -142,6 +142,7 @@ class CombiningSystem extends System {
     }
 }
 
+/*--------------------------------GAME INITIALIZATION AND LOOP-----------------------------------*/
 function init() {
     createFixedEntity("fire");
     createFixedEntity("water");

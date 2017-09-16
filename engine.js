@@ -1,11 +1,15 @@
 var components = [
     "PositionComponent",
     "RenderComponent",
-    "Draggable",
-    "Dragged",
-    "Fixed",
     "Input",
-    "Collidable"
+    "Collidable",
+    /*"Draggable",
+    "Dragged",
+    "Fixed"*/
+    "GridPosition",
+    "Food",
+    "SnakeHead",
+    "SnakeSegment"
 ];
 //calculate signatures for all components
 var componentSignatureMap = {};
@@ -150,7 +154,7 @@ function Collidable() {
 
 class RenderSystem extends System {
     constructor() {
-        super(0b1100000);
+        super(0b11000000);
     }
 
     update() {
@@ -175,16 +179,33 @@ class RenderSystem extends System {
 
 class InputSystem extends System {
     constructor() {
-        super(0b1100010);
+        super(0b11100000);
     }
 
     init() {
         canvas.addEventListener("mousedown", this.handleMouseDown.bind(this), false);
         canvas.addEventListener("mouseup", this.handleMouseUp.bind(this), false);
         canvas.addEventListener("mousemove", this.handleMouseMove.bind(this), false);
+        canvas.addEventListener("keydown", this.handleKeyPress.bind(this), false);
     }
 
     update() {
+    }
+
+    handleKeyPress(e) {
+        if(e.keyCode == '38'){
+            //up
+            PubSub.publish("keyDown", {key:"up"})
+        } else if(e.keyCode == '40'){
+            //down
+            PubSub.publish("keyDown", {key:"down"})
+        } else if(e.keyCode == '37'){
+            //left
+            PubSub.publish("keyDown", {key:"left"})
+        } else if(e.keyCode == '39'){
+            //right
+            PubSub.publish("keyDown", {key:"right"})
+        }
     }
 
     handleMouseMove(e) {
@@ -209,7 +230,6 @@ class InputSystem extends System {
         var mouseY = this.getMouseY(e);
 
         var entity = this.getInputEntity(mouseX, mouseY);
-        console.log(entity);
         if (entity) {
             PubSub.publish("mouseUp", {"mouseX": mouseX, "mouseY": mouseY, "entity": entity});
         }
@@ -249,7 +269,7 @@ class InputSystem extends System {
 
 class CollisionSystem extends System {
     constructor() {
-        super(0b1100001);
+        super(0b11010000);
     }
 
     init() {
