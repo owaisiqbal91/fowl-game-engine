@@ -1,19 +1,6 @@
 canvas = document.getElementById("alchemy");
 context = canvas.getContext('2d');
 
-function PositionComponent(x, y, z = 0) {
-    this.x = x;
-    this.y = y;
-    this.z = 0;
-}
-
-function RenderComponent(width, height, src) {
-    this.image = new Image();
-    this.image.width = width;
-    this.image.height = height;
-    this.image.src = src;
-}
-
 function Draggable() {
 }
 
@@ -23,111 +10,6 @@ function Dragged(xOffset, yOffset) {
 }
 
 function Fixed() {
-}
-
-function Input() {
-}
-
-function Collidable() {
-}
-
-class RenderSystem extends System {
-    constructor() {
-        super(0b1100000);
-    }
-
-    update() {
-        canvas.width = canvas.width;
-
-        var entitiesSortedByZOrder = Object.values(this.relevantEntitiesMap).sort(this.compareZOrder);
-        for (var i = 0; i < entitiesSortedByZOrder.length; i++) {
-            var entity = entitiesSortedByZOrder[i];
-            var pc = entity.components[PositionComponent.prototype.constructor.name];
-            var rc = entity.components[RenderComponent.prototype.constructor.name];
-
-            context.drawImage(rc.image, pc.x, pc.y, rc.image.width, rc.image.height);
-        }
-    }
-
-    compareZOrder(a, b) {
-        if (a.components[PositionComponent.prototype.constructor.name].z > b.components[PositionComponent.prototype.constructor.name].z)
-            return 1;
-        else return -1;
-    }
-}
-
-class InputSystem extends System {
-    constructor() {
-        super(0b1100010);
-    }
-
-    init() {
-        canvas.addEventListener("mousedown", this.handleMouseDown.bind(this), false);
-        canvas.addEventListener("mouseup", this.handleMouseUp.bind(this), false);
-        canvas.addEventListener("mousemove", this.handleMouseMove.bind(this), false);
-    }
-
-    update() {
-    }
-
-    handleMouseMove(e) {
-        var mouseX = this.getMouseX(e);
-        var mouseY = this.getMouseY(e);
-
-        PubSub.publish("mouseMove", {"mouseX": mouseX, "mouseY": mouseY});
-    }
-
-    handleMouseDown(e) {
-        var mouseX = this.getMouseX(e);
-        var mouseY = this.getMouseY(e);
-
-        var entity = this.getInputEntity(mouseX, mouseY);
-        if (entity) {
-            PubSub.publish("mouseDown", {"mouseX": mouseX, "mouseY": mouseY, "entity": entity});
-        }
-    }
-
-    handleMouseUp(e) {
-        var mouseX = this.getMouseX(e);
-        var mouseY = this.getMouseY(e);
-
-        var entity = this.getInputEntity(mouseX, mouseY);
-        console.log(entity);
-        if (entity) {
-            PubSub.publish("mouseUp", {"mouseX": mouseX, "mouseY": mouseY, "entity": entity});
-        }
-    }
-
-    getInputEntity(mouseX, mouseY) {
-        var topmostEntity;
-        var topmostZ = -1;
-        for (var key in this.relevantEntitiesMap) {
-            var entity = this.relevantEntitiesMap[key];
-            var pc = entity.components[PositionComponent.prototype.constructor.name];
-
-            var rc = entity.components[RenderComponent.prototype.constructor.name];
-            if (this.checkEntity(mouseX, mouseY, pc.x, pc.y, rc.image.width, rc.image.height)) {
-                if (!topmostEntity || pc.z > topmostZ) {
-                    topmostEntity = entity;
-                    topmostZ = pc.z;
-                }
-            }
-        }
-        return topmostEntity;
-    }
-
-    checkEntity(mouseX, mouseY, entityX, entityY, entityWidth, entityHeight) {
-        return (mouseX >= entityX && mouseX <= (entityX + entityWidth)
-            && mouseY >= entityY && mouseY <= (entityY + entityHeight));
-    }
-
-    getMouseX(e) {
-        return e.clientX - canvas.getBoundingClientRect().left;
-    }
-
-    getMouseY(e) {
-        return e.clientY - canvas.getBoundingClientRect().top;
-    }
 }
 
 class DraggableSystem extends System {
@@ -148,7 +30,6 @@ class DraggableSystem extends System {
             var pc = entity.components[PositionComponent.prototype.constructor.name];
             highestZ += 1;
             pc.z = highestZ;
-            console.log(highestZ);
             entity.addComponent(new Dragged(data["mouseX"] - pc.x, data["mouseY"] - pc.y));
         }
     }
@@ -219,6 +100,7 @@ class FixedSystem extends System {
 
             var newDraggableEntity = EntityManager.createEntity(entity.name);
             highestZ += 1;
+            console.log(highestZ);
             newDraggableEntity.addComponent(new PositionComponent(pc.x, pc.y, highestZ));
             newDraggableEntity.addComponent(rc);
             newDraggableEntity.addComponent(new Input());
@@ -226,49 +108,6 @@ class FixedSystem extends System {
             newDraggableEntity.addComponent(new Collidable());
             newDraggableEntity.addComponent(new Dragged(data["mouseX"] - pc.x, data["mouseY"] - pc.y));
         }
-    }
-}
-
-class CollisionSystem extends System {
-    constructor() {
-        super(0b1100001);
-    }
-
-    init() {
-        PubSub.subscribe("checkCollision", this.checkCollision.bind(this));
-    }
-
-    update() {
-    }
-
-    checkCollision(topic, data) {
-        var entity = data["entity"];
-        if (this.relevantEntitiesMap[entity.id]) {
-            //check for out of bounds
-            var pc = entity.components[PositionComponent.prototype.constructor.name];
-            var rc = entity.components[RenderComponent.prototype.constructor.name];
-
-            var p1 = {x: pc.x, y: pc.y};
-            var p2 = {x: pc.x + rc.image.width, y: pc.y + rc.image.height};
-            for (var entityId in this.relevantEntitiesMap) {
-                if (entityId != entity.id) {
-                    var otherEntity = this.relevantEntitiesMap[entityId];
-                    var otherpc = otherEntity.components[PositionComponent.prototype.constructor.name];
-                    var otherrc = otherEntity.components[RenderComponent.prototype.constructor.name];
-                    var p3 = {x: otherpc.x, y: otherpc.y};
-                    var p4 = {x: otherpc.x + otherrc.image.width, y: otherpc.y + otherrc.image.height};
-
-                    if (this.checkOverlapping(p1, p2, p3, p4)) {
-                        PubSub.publishSync("collision", {entity1: entity, entity2: otherEntity});
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    checkOverlapping(p1, p2, p3, p4) {
-        return !( p2.y < p3.y || p1.y > p4.y || p2.x < p3.x || p1.x > p4.x )
     }
 }
 
