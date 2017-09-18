@@ -324,6 +324,7 @@ function initializeEntities() {
 }
 
 function init() {
+    ComponentManager.initialize(["GridPosition", "Food", "SnakeHead", "SnakeSegment", "Wall"])
     initializeEntities();
 
     //add systems
@@ -365,4 +366,4 @@ function incrementScore() {
 
 
 init();
-setInterval(game_loop, 70);
+setInterval(game_loop, 100);

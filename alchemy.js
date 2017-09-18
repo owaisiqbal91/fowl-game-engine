@@ -144,6 +144,9 @@ class CombiningSystem extends System {
 
 /*--------------------------------GAME INITIALIZATION AND LOOP-----------------------------------*/
 function init() {
+    //define components
+    ComponentManager.initialize(["Draggable", "Dragged", "Fixed"]);
+
     createFixedEntity("fire");
     createFixedEntity("water");
     SystemManager.addSystem(new RenderSystem());

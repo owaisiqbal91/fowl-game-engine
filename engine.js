@@ -2,21 +2,26 @@ var components = [
     "PositionComponent",
     "RenderComponent",
     "Input",
-    "Collidable",
+    "Collidable"//,
     /*"Draggable",
     "Dragged",
     "Fixed"*/
-    "GridPosition",
+    /*"GridPosition",
     "Food",
     "SnakeHead",
     "SnakeSegment",
-    "Wall"
+    "Wall"*/
 ];
 //calculate signatures for all components
 var componentSignatureMap = {};
-for (var i = 0; i < components.length; i++) {
-    var bitsToShift = components.length - 1 - i;
-    componentSignatureMap[components[i]] = 0b1 << bitsToShift;
+function ComponentManager() {}
+ComponentManager.initialize = function(gameComponents) {
+    ComponentManager.newComponentsLength = gameComponents.length;
+    components = components.concat(gameComponents);
+    for (var i = 0; i < components.length; i++) {
+        var bitsToShift = components.length - 1 - i;
+        componentSignatureMap[components[i]] = 0b1 << bitsToShift;
+    }
 }
 
 function Entity(id, name) {
@@ -156,7 +161,7 @@ function Collidable() {
 
 class RenderSystem extends System {
     constructor() {
-        super(0b110000000);
+        super(0b1100 << ComponentManager.newComponentsLength);
     }
 
     update() {
@@ -194,7 +199,7 @@ function drawRotatedImage(image, x, y, angle, width, height) {
 
 class InputSystem extends System {
     constructor() {
-        super(0b111000000);
+        super(0b1110 << ComponentManager.newComponentsLength);
     }
 
     init() {
@@ -284,7 +289,7 @@ class InputSystem extends System {
 
 class CollisionSystem extends System {
     constructor() {
-        super(0b110100000);
+        super(0b1101 << ComponentManager.newComponentsLength);
     }
 
     init() {
