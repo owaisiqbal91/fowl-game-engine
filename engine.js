@@ -9,7 +9,8 @@ var components = [
     "GridPosition",
     "Food",
     "SnakeHead",
-    "SnakeSegment"
+    "SnakeSegment",
+    "Wall"
 ];
 //calculate signatures for all components
 var componentSignatureMap = {};
@@ -144,6 +145,7 @@ function RenderComponent(width, height, src) {
     this.image.width = width;
     this.image.height = height;
     this.image.src = src;
+    this.rotateAngle = 0;
 }
 
 function Input() {
@@ -154,7 +156,7 @@ function Collidable() {
 
 class RenderSystem extends System {
     constructor() {
-        super(0b11000000);
+        super(0b110000000);
     }
 
     update() {
@@ -166,7 +168,11 @@ class RenderSystem extends System {
             var pc = entity.components[PositionComponent.prototype.constructor.name];
             var rc = entity.components[RenderComponent.prototype.constructor.name];
 
-            context.drawImage(rc.image, pc.x, pc.y, rc.image.width, rc.image.height);
+            if(rc.rotateAngle == 0){
+                context.drawImage(rc.image, pc.x, pc.y, rc.image.width, rc.image.height);
+            } else {
+                drawRotatedImage(rc.image, pc.x, pc.y, rc.rotateAngle, rc.image.width, rc.image.height);
+            }
         }
     }
 
@@ -177,9 +183,18 @@ class RenderSystem extends System {
     }
 }
 
+var TO_RADIANS = Math.PI/180;
+function drawRotatedImage(image, x, y, angle, width, height) {
+    context.save();
+    context.translate(x+(width/2), y+(height/2));
+    context.rotate(angle * TO_RADIANS);
+    context.drawImage(image, -(width/2), -(height/2), width, height);
+    context.restore();
+}
+
 class InputSystem extends System {
     constructor() {
-        super(0b11100000);
+        super(0b111000000);
     }
 
     init() {
@@ -195,16 +210,16 @@ class InputSystem extends System {
     handleKeyPress(e) {
         if(e.keyCode == '38'){
             //up
-            PubSub.publish("keyDown", {key:"up"})
+            PubSub.publishSync("keyDown", {key:"up"})
         } else if(e.keyCode == '40'){
             //down
-            PubSub.publish("keyDown", {key:"down"})
+            PubSub.publishSync("keyDown", {key:"down"})
         } else if(e.keyCode == '37'){
             //left
-            PubSub.publish("keyDown", {key:"left"})
+            PubSub.publishSync("keyDown", {key:"left"})
         } else if(e.keyCode == '39'){
             //right
-            PubSub.publish("keyDown", {key:"right"})
+            PubSub.publishSync("keyDown", {key:"right"})
         }
     }
 
@@ -269,7 +284,7 @@ class InputSystem extends System {
 
 class CollisionSystem extends System {
     constructor() {
-        super(0b11010000);
+        super(0b110100000);
     }
 
     init() {

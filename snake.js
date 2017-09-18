@@ -33,11 +33,12 @@ function GridPosition(x, y) {
 
 function Food() {}
 function SnakeHead() {}
-function SnakeSegment() {}
+function SnakeSegment(entity){}
+function Wall() {}
 
 class GridSystem extends System {
     constructor(){
-        super(0b11001000);
+        super(0b110010000);
     }
     update() {
         for(var entityId in this.relevantEntitiesMap) {
@@ -54,7 +55,7 @@ class GridSystem extends System {
 
 class FoodSystem extends System {
     constructor(){
-        super(0b11001100);
+        super(0b110011000);
     }
     init() {
         PubSub.subscribe("collision", this.handleCollision.bind(this))
@@ -65,11 +66,11 @@ class FoodSystem extends System {
         }
     }
     update() {
-
     }
     handleCollision(topic, data){
         var entity = data.entity;
         if(this.relevantEntitiesMap[entity.id]){
+            PubSub.publishSync("foodEaten", {});
             this.generateFoodAtRandomPosition(entity);
         }
     }
@@ -86,9 +87,60 @@ class FoodSystem extends System {
     }
 }
 
+class SnakeSegmentSystem extends System {
+    constructor(snakeHead){
+        super(0b110010010);
+        this.snakeHead = snakeHead;
+    }
+    init() {
+        this.segments = [];
+        this.segments.push(this.snakeHead);
+
+        PubSub.subscribe("collision", this.handleCollision.bind(this));
+        PubSub.subscribe("foodEaten", this.foodEaten.bind(this));
+        PubSub.subscribe("gameOver", this.gameOver.bind(this));
+        PubSub.subscribe("snakeMove", this.moveSegments.bind(this));
+    }
+    handleCollision(topic, data){
+        var entity = data.entity;
+        if(this.relevantEntitiesMap[entity.id]){
+            console.log("hit itself");
+            PubSub.publishSync("gameOver", {});
+        }
+    }
+    gameOver(){
+        //TODO
+        //console.log("gameOver");
+    }
+    foodEaten(){
+        var snakeSegment = EntityManager.createEntity("snakeSegment");
+        snakeSegment.addComponent(new PositionComponent(-100, -100));
+        snakeSegment.addComponent(new RenderComponent(Grid.tileWidth, Grid.tileHeight, "images/snake/neon_snake_body.png"));
+        snakeSegment.addComponent(new GridPosition(-1, -1));
+        snakeSegment.addComponent(new SnakeSegment());
+        this.segments.push(snakeSegment);
+    }
+    moveSegments(){
+        var pgc = this.segments[0].components[GridPosition.prototype.constructor.name];
+        var shiftedXY = {x:pgc.x, y:pgc.y};
+        for(var i=1; i<this.segments.length; i++){
+            var gc = this.segments[i].components[GridPosition.prototype.constructor.name];
+            var tempX = gc.x;
+            var tempY = gc.y;
+            gc.x = shiftedXY.x;
+            gc.y = shiftedXY.y;
+            Grid.putAt(gc.x, gc.y, this.segments[i]);
+            shiftedXY.x = tempX;
+            shiftedXY.y = tempY;
+        }
+    }
+    update(){
+    }
+}
+
 class MovementSystem extends System {
     constructor() {
-        super(0b11001010);
+        super(0b110010100);
     }
     init(){
         this.currentDirection = this.right;
@@ -96,14 +148,29 @@ class MovementSystem extends System {
     }
 
     handleKeyDown(topic, data) {
-        if(data.key === "up" && this.currentDirection != this.down)
+        if(data.key === "up" && this.currentDirection != this.down){
             this.currentDirection = this.up;
-        else if(data.key === "down" && this.currentDirection != this.up)
+            this.rotateEntity(270);
+        }
+        else if(data.key === "down" && this.currentDirection != this.up){
             this.currentDirection = this.down;
-        else if(data.key === "left" && this.currentDirection != this.right)
+            this.rotateEntity(90);
+        }
+        else if(data.key === "left" && this.currentDirection != this.right){
             this.currentDirection = this.left;
-        else if(data.key === "right" && this.currentDirection != this.left)
+            this.rotateEntity(180);
+        }
+        else if(data.key === "right" && this.currentDirection != this.left){
             this.currentDirection = this.right;
+            this.rotateEntity(0);
+        }
+    }
+    rotateEntity(rotateAngle) {
+        for(var key in this.relevantEntitiesMap){
+            var entity = this.relevantEntitiesMap[key];
+            var rc = entity.components[RenderComponent.prototype.constructor.name];
+            rc.rotateAngle = rotateAngle;
+        }
     }
 
     up(x, y) {
@@ -128,13 +195,15 @@ class MovementSystem extends System {
             var gp = entity.components[GridPosition.prototype.constructor.name];
             var newPos = this.currentDirection(gp.x, gp.y);
             var entityAtNewPos = Grid.getAt(newPos.x, newPos.y);
+
             if(entityAtNewPos){
                 PubSub.publishSync("collision", {entity: entityAtNewPos});
             } else if(newPos.x >= Grid.totalColumns || newPos.y >= Grid.totalRows
             || newPos.x < 0 || newPos.y < 0) {
-                PubSub.publishSync("outOfBounds", {});
+                PubSub.publishSync("gameOver", {});
             }
 
+            PubSub.publishSync("snakeMove", {});
             gp.x = newPos.x;
             gp.y = newPos.y;
             Grid.putAt(newPos.x, newPos.y, entity);
@@ -142,18 +211,34 @@ class MovementSystem extends System {
     }
 }
 
-class GameStateSystem extends System {
+class WallSystem extends System {
     constructor() {
-        super(0b00000000);
+        super(0b000000001);
     }
     init(){
-        PubSub.subscribe("outOfBounds", this.resetGameState.bind(this));
+        PubSub.subscribe("collision", this.handleCollision.bind(this));
+    }
+    update(){
+    }
+    handleCollision(topic, data){
+        var entity = data.entity;
+        if(this.relevantEntitiesMap[entity.id]){
+            PubSub.publishSync("gameOver", {});
+        }
+    }
+}
+
+class GameStateSystem extends System {
+    constructor() {
+        super(0b000000000);
+    }
+    init(){
+        PubSub.subscribe("gameOver", this.resetGameState.bind(this));
     }
     resetGameState(topic, data){
-        console.log("state reset")
+        //console.log("state reset")
     }
     update() {
-
     }
 }
 
@@ -163,24 +248,46 @@ function getRandomInt(min, max) {
 }
 
 function init() {
+    //generate walls, hardcoding for now
+    var wallRenderComponent = new RenderComponent(Grid.tileWidth, Grid.tileHeight, "images/snake/neon_wall.png");
+    for(var i=0; i<Grid.totalColumns; i++){
+        for(var j=0; j<Grid.totalRows; j++){
+            /*if((i>=5 && i <=8 && j==4)
+            || (j>=20 && j<=40 && i==20)
+            || (i==30 && j>=10 && j<=15)
+            || (j==9 && i>=25 && i<=35)){*/
+            if(i >= 20){
+                var wall = EntityManager.createEntity("wall");
+                wall.addComponent(new PositionComponent(Grid.getTile(i, j).x, Grid.getTile(i, j).y));
+                wall.addComponent(wallRenderComponent);
+                wall.addComponent(new Wall());
+                Grid.putAt(i, j, wall);
+            }
+        }
+    }
+
+    //add food and snake head
     var food = EntityManager.createEntity("food");
     food.addComponent(new PositionComponent(0, 0));
-    food.addComponent(new RenderComponent(Grid.tileWidth, Grid.tileHeight, "images/snake/food.png"));
+    food.addComponent(new RenderComponent(Grid.tileWidth, Grid.tileHeight, "images/snake/neon_food.png"));
     food.addComponent(new GridPosition(0, 0));
     food.addComponent(new Food());
     var snakeHead = EntityManager.createEntity("snakeHead");
     var initialPos = {x: 10, y: 10};
     snakeHead.addComponent(new PositionComponent(Grid.getTile(initialPos.x, initialPos.y).x, Grid.getTile(initialPos.x, initialPos.y).y));
-    snakeHead.addComponent(new RenderComponent(Grid.tileWidth, Grid.tileHeight, "images/snake/snake_head.png"));
+    snakeHead.addComponent(new RenderComponent(Grid.tileWidth, Grid.tileHeight, "images/snake/neon_snake_head.png"));
     snakeHead.addComponent(new GridPosition(initialPos.x, initialPos.y));
     snakeHead.addComponent(new SnakeHead());
     Grid.putAt(initialPos.x, initialPos.y, snakeHead);
 
+    //add systems
     SystemManager.addSystem(new RenderSystem());
     SystemManager.addSystem(new GridSystem());
     SystemManager.addSystem(new MovementSystem());
     SystemManager.addSystem(new InputSystem());
     SystemManager.addSystem(new FoodSystem());
+    SystemManager.addSystem(new SnakeSegmentSystem(snakeHead));
+    SystemManager.addSystem(new WallSystem());
     SystemManager.addSystem(new GameStateSystem());
 }
 
@@ -190,6 +297,7 @@ function game_loop() {
     }
     EntityManager.sweepRemovalOfComponents();
 }
+
 
 init();
 setInterval(game_loop, 70);
