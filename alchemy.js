@@ -116,7 +116,11 @@ class CombiningSystem extends System {
         super(0b1101000);
         this.rules = {
             "fire + water": "steam",
-            "water + fire": "steam"
+            "water + fire": "steam",
+            "earth + air": "dust",
+            "air + earth": "dust",
+            "steam + air": "cloud",
+            "air + steam": "cloud"
         }
         this.elementsFound = {};
     }
@@ -131,6 +135,12 @@ class CombiningSystem extends System {
     combineElements(topic, data) {
         var combined = this.rules[data.entity1.name + " + " + data.entity2.name];
         if (combined) {
+            var combinedEntity = EntityManager.createEntity(combined);
+            combinedEntity.addComponent(data.entity2.components[PositionComponent.prototype.constructor.name]);
+            combinedEntity.addComponent(new RenderComponent(74, 74, "images/"+combined+".png"));
+            combinedEntity.addComponent(new Input());
+            combinedEntity.addComponent(new Draggable());
+            combinedEntity.addComponent(new Collidable());
             EntityManager.removeEntity(data.entity1);
             EntityManager.removeEntity(data.entity2);
 
@@ -149,7 +159,11 @@ function init() {
 
     createFixedEntity("fire");
     createFixedEntity("water");
-    SystemManager.addSystem(new RenderSystem());
+    createFixedEntity("air");
+    createFixedEntity("earth");
+    var rs = new RenderSystem();
+    rs.addBeforeRenderCallback(renderBackground);
+    SystemManager.addSystem(rs);
     SystemManager.addSystem(new InputSystem());
     SystemManager.addSystem(new FixedSystem());
     SystemManager.addSystem(new DraggableSystem());
@@ -161,7 +175,7 @@ function init() {
 var currentOffset = 0;
 function createFixedEntity(name) {
     var entity = EntityManager.createEntity(name);
-    entity.addComponent(new PositionComponent(700, 50 + currentOffset * 100));
+    entity.addComponent(new PositionComponent(700, currentOffset * 70));
     entity.addComponent(new RenderComponent(74, 74, "images/" + name + ".png"));
     entity.addComponent(new Input());
     entity.addComponent(new Fixed());
@@ -176,6 +190,11 @@ function game_loop() {
         SystemManager.systems[i].update();
     }
     EntityManager.sweepRemovalOfComponents();
+}
+
+function renderBackground() {
+    context.fillStyle = "#FFB44E";
+    context.fillRect(canvas.width-100, 0, 100, canvas.clientHeight);
 }
 
 setInterval(game_loop, 30);

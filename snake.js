@@ -328,7 +328,9 @@ function init() {
     initializeEntities();
 
     //add systems
-    SystemManager.addSystem(new RenderSystem());
+    var rs = new RenderSystem();
+    rs.addAfterRenderCallback(renderScore);
+    SystemManager.addSystem(rs);
     SystemManager.addSystem(new GridSystem());
     SystemManager.addSystem(new MovementSystem());
     SystemManager.addSystem(new InputSystem());
@@ -343,9 +345,6 @@ function game_loop() {
         SystemManager.systems[i].update();
     }
     EntityManager.sweepRemovalOfComponents();
-
-    //temporary place for this
-    renderScore();
 }
 
 var score = 0;

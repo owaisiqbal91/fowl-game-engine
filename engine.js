@@ -2,15 +2,7 @@ var components = [
     "PositionComponent",
     "RenderComponent",
     "Input",
-    "Collidable"//,
-    /*"Draggable",
-    "Dragged",
-    "Fixed"*/
-    /*"GridPosition",
-    "Food",
-    "SnakeHead",
-    "SnakeSegment",
-    "Wall"*/
+    "Collidable"
 ];
 //calculate signatures for all components
 var componentSignatureMap = {};
@@ -163,9 +155,17 @@ class RenderSystem extends System {
     constructor() {
         super(0b1100 << ComponentManager.newComponentsLength);
     }
+    addBeforeRenderCallback(callback) {
+        this.beforeRenderCallback = callback;
+    }
+    addAfterRenderCallback(callback) {
+        this.afterRenderCallback = callback;
+    }
 
     update() {
         canvas.width = canvas.width;
+
+        if(this.beforeRenderCallback) this.beforeRenderCallback();
 
         var entitiesSortedByZOrder = Object.values(this.relevantEntitiesMap).sort(this.compareZOrder);
         for (var i = 0; i < entitiesSortedByZOrder.length; i++) {
@@ -179,6 +179,8 @@ class RenderSystem extends System {
                 drawRotatedImage(rc.image, pc.x, pc.y, rc.rotateAngle, rc.image.width, rc.image.height);
             }
         }
+
+        if(this.afterRenderCallback) this.afterRenderCallback();
     }
 
     compareZOrder(a, b) {
