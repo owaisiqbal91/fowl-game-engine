@@ -6,16 +6,18 @@ class Grid {
     static getTile(x, y) {
         return {x: Grid.tileWidth * x, y: Grid.tileHeight * y};
     }
-    static putAt(x, y, entity){
+
+    static putAt(x, y, entity) {
         //remove if already placed
-        if(Grid.occupyingEntities[entity.id]){
+        if (Grid.occupyingEntities[entity.id]) {
             delete Grid.occupiedCells[Grid.occupyingEntities[entity.id]];
         }
-        Grid.occupiedCells[x+","+y] = entity;
-        Grid.occupyingEntities[entity.id] = x+","+y;
+        Grid.occupiedCells[x + "," + y] = entity;
+        Grid.occupyingEntities[entity.id] = x + "," + y;
     }
-    static getAt(x, y){
-        return Grid.occupiedCells[x+","+y];
+
+    static getAt(x, y) {
+        return Grid.occupiedCells[x + "," + y];
     }
 }
 
@@ -31,17 +33,25 @@ function GridPosition(x, y) {
     this.y = y;
 }
 
-function Food() {}
-function SnakeHead() {}
-function SnakeSegment(entity){}
-function Wall() {}
+function Food() {
+}
+
+function SnakeHead() {
+}
+
+function SnakeSegment(entity) {
+}
+
+function Wall() {
+}
 
 class GridSystem extends System {
-    constructor(){
+    constructor() {
         super(0b110010000);
     }
+
     update() {
-        for(var entityId in this.relevantEntitiesMap) {
+        for (var entityId in this.relevantEntitiesMap) {
             var entity = this.relevantEntitiesMap[entityId];
             var pc = entity.components[PositionComponent.prototype.constructor.name];
             var gp = entity.components[GridPosition.prototype.constructor.name];
@@ -54,32 +64,36 @@ class GridSystem extends System {
 }
 
 class FoodSystem extends System {
-    constructor(){
+    constructor() {
         super(0b110011000);
     }
+
     init() {
         PubSub.subscribe("collision", this.handleCollision.bind(this))
-        for(var key in this.relevantEntitiesMap){
+        for (var key in this.relevantEntitiesMap) {
             var food = this.relevantEntitiesMap[key];
             this.generateFoodAtRandomPosition(food);
             break;
         }
     }
+
     update() {
     }
-    handleCollision(topic, data){
+
+    handleCollision(topic, data) {
         var entity = data.entity;
-        if(this.relevantEntitiesMap[entity.id]){
+        if (this.relevantEntitiesMap[entity.id]) {
             PubSub.publishSync("foodEaten", {});
+            incrementScore();
             this.generateFoodAtRandomPosition(entity);
         }
     }
 
-    generateFoodAtRandomPosition(food){
-        do{
+    generateFoodAtRandomPosition(food) {
+        do {
             var gridX = getRandomInt(0, Grid.totalColumns);
             var gridY = getRandomInt(0, Grid.totalRows);
-        } while(Grid.getAt(gridX, gridY));
+        } while (Grid.getAt(gridX, gridY));
         var gp = food.components[GridPosition.prototype.constructor.name];
         gp.x = gridX;
         gp.y = gridY;
@@ -88,10 +102,11 @@ class FoodSystem extends System {
 }
 
 class SnakeSegmentSystem extends System {
-    constructor(snakeHead){
+    constructor(snakeHead) {
         super(0b110010010);
         this.snakeHead = snakeHead;
     }
+
     init() {
         this.segments = [];
         this.segments.push(this.snakeHead);
@@ -101,29 +116,41 @@ class SnakeSegmentSystem extends System {
         PubSub.subscribe("gameOver", this.gameOver.bind(this));
         PubSub.subscribe("snakeMove", this.moveSegments.bind(this));
     }
-    handleCollision(topic, data){
+
+    handleCollision(topic, data) {
         var entity = data.entity;
-        if(this.relevantEntitiesMap[entity.id]){
+        if (this.relevantEntitiesMap[entity.id]) {
             console.log("hit itself");
             PubSub.publishSync("gameOver", {});
         }
     }
-    gameOver(){
-        //TODO
-        //console.log("gameOver");
-    }
-    foodEaten(){
-        var snakeSegment = EntityManager.createEntity("snakeSegment");
-        snakeSegment.addComponent(new PositionComponent(-100, -100));
-        snakeSegment.addComponent(new RenderComponent(Grid.tileWidth, Grid.tileHeight, "images/snake/neon_snake_body.png"));
-        snakeSegment.addComponent(new GridPosition(-1, -1));
-        snakeSegment.addComponent(new SnakeSegment());
-        this.segments.push(snakeSegment);
-    }
-    moveSegments(){
-        var pgc = this.segments[0].components[GridPosition.prototype.constructor.name];
-        var shiftedXY = {x:pgc.x, y:pgc.y};
+
+    gameOver() {
         for(var i=1; i<this.segments.length; i++){
+            EntityManager.removeEntity(this.segments[i]);
+        }
+        this.segments = [];
+        this.segments.push(snakeHead);
+        var gc = snakeHead.components[GridPosition.prototype.constructor.name];
+        gc.x = initialPos.x;
+        gc.y = initialPos.y;
+    }
+
+    foodEaten() {
+        for(var i=0; i<3; i++){
+            var snakeSegment = EntityManager.createEntity("snakeSegment");
+            snakeSegment.addComponent(new PositionComponent(-100, -100));
+            snakeSegment.addComponent(new RenderComponent(Grid.tileWidth, Grid.tileHeight, "images/snake/neon_snake_body.png"));
+            snakeSegment.addComponent(new GridPosition(-1, -1));
+            snakeSegment.addComponent(new SnakeSegment());
+            this.segments.push(snakeSegment);
+        }
+    }
+
+    moveSegments() {
+        var pgc = this.segments[0].components[GridPosition.prototype.constructor.name];
+        var shiftedXY = {x: pgc.x, y: pgc.y};
+        for (var i = 1; i < this.segments.length; i++) {
             var gc = this.segments[i].components[GridPosition.prototype.constructor.name];
             var tempX = gc.x;
             var tempY = gc.y;
@@ -134,7 +161,8 @@ class SnakeSegmentSystem extends System {
             shiftedXY.y = tempY;
         }
     }
-    update(){
+
+    update() {
     }
 }
 
@@ -142,31 +170,33 @@ class MovementSystem extends System {
     constructor() {
         super(0b110010100);
     }
-    init(){
+
+    init() {
         this.currentDirection = this.right;
         PubSub.subscribe("keyDown", this.handleKeyDown.bind(this));
     }
 
     handleKeyDown(topic, data) {
-        if(data.key === "up" && this.currentDirection != this.down){
+        if (data.key === "up" && this.currentDirection != this.down) {
             this.currentDirection = this.up;
             this.rotateEntity(270);
         }
-        else if(data.key === "down" && this.currentDirection != this.up){
+        else if (data.key === "down" && this.currentDirection != this.up) {
             this.currentDirection = this.down;
             this.rotateEntity(90);
         }
-        else if(data.key === "left" && this.currentDirection != this.right){
+        else if (data.key === "left" && this.currentDirection != this.right) {
             this.currentDirection = this.left;
             this.rotateEntity(180);
         }
-        else if(data.key === "right" && this.currentDirection != this.left){
+        else if (data.key === "right" && this.currentDirection != this.left) {
             this.currentDirection = this.right;
             this.rotateEntity(0);
         }
     }
+
     rotateEntity(rotateAngle) {
-        for(var key in this.relevantEntitiesMap){
+        for (var key in this.relevantEntitiesMap) {
             var entity = this.relevantEntitiesMap[key];
             var rc = entity.components[RenderComponent.prototype.constructor.name];
             rc.rotateAngle = rotateAngle;
@@ -196,17 +226,17 @@ class MovementSystem extends System {
             var newPos = this.currentDirection(gp.x, gp.y);
             var entityAtNewPos = Grid.getAt(newPos.x, newPos.y);
 
-            if(entityAtNewPos){
-                PubSub.publishSync("collision", {entity: entityAtNewPos});
-            } else if(newPos.x >= Grid.totalColumns || newPos.y >= Grid.totalRows
-            || newPos.x < 0 || newPos.y < 0) {
-                PubSub.publishSync("gameOver", {});
-            }
-
             PubSub.publishSync("snakeMove", {});
             gp.x = newPos.x;
             gp.y = newPos.y;
-            Grid.putAt(newPos.x, newPos.y, entity);
+            //Grid.putAt(gp.x, gp.y, entity);
+
+            if (entityAtNewPos) {
+                PubSub.publishSync("collision", {entity: entityAtNewPos});
+            } else if (newPos.x >= Grid.totalColumns || newPos.y >= Grid.totalRows
+                || newPos.x < 0 || newPos.y < 0) {
+                PubSub.publishSync("gameOver", {});
+            }
         }
     }
 }
@@ -215,14 +245,17 @@ class WallSystem extends System {
     constructor() {
         super(0b000000001);
     }
-    init(){
+
+    init() {
         PubSub.subscribe("collision", this.handleCollision.bind(this));
     }
-    update(){
+
+    update() {
     }
-    handleCollision(topic, data){
+
+    handleCollision(topic, data) {
         var entity = data.entity;
-        if(this.relevantEntitiesMap[entity.id]){
+        if (this.relevantEntitiesMap[entity.id]) {
             PubSub.publishSync("gameOver", {});
         }
     }
@@ -232,12 +265,16 @@ class GameStateSystem extends System {
     constructor() {
         super(0b000000000);
     }
-    init(){
+
+    init() {
         PubSub.subscribe("gameOver", this.resetGameState.bind(this));
     }
-    resetGameState(topic, data){
-        //console.log("state reset")
+
+    resetGameState(topic, data) {
+        score = 0;
+        persistentStorage.persist("highScore", highScore);
     }
+
     update() {
     }
 }
@@ -247,16 +284,20 @@ function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
 }
 
-function init() {
+var persistentStorage = new PersistentStorage();
+var snakeHead;
+
+var initialPos = {x: 10, y: 10};
+function initializeEntities() {
     //generate walls, hardcoding for now
     var wallRenderComponent = new RenderComponent(Grid.tileWidth, Grid.tileHeight, "images/snake/neon_wall.png");
-    for(var i=0; i<Grid.totalColumns; i++){
-        for(var j=0; j<Grid.totalRows; j++){
-            /*if((i>=5 && i <=8 && j==4)
-            || (j>=20 && j<=40 && i==20)
-            || (i==30 && j>=10 && j<=15)
-            || (j==9 && i>=25 && i<=35)){*/
-            if(i >= 20){
+    for (var i = 0; i < Grid.totalColumns; i++) {
+        for (var j = 0; j < Grid.totalRows; j++) {
+            if ((i >= 5 && i <= 8 && j == 4)
+                || (j >= 20 && j <= 40 && i == 20)
+                || (i == 30 && j >= 10 && j <= 15)
+                || (j == 9 && i >= 25 && i <= 35)) {
+                //if(i >= 20){
                 var wall = EntityManager.createEntity("wall");
                 wall.addComponent(new PositionComponent(Grid.getTile(i, j).x, Grid.getTile(i, j).y));
                 wall.addComponent(wallRenderComponent);
@@ -272,13 +313,18 @@ function init() {
     food.addComponent(new RenderComponent(Grid.tileWidth, Grid.tileHeight, "images/snake/neon_food.png"));
     food.addComponent(new GridPosition(0, 0));
     food.addComponent(new Food());
-    var snakeHead = EntityManager.createEntity("snakeHead");
-    var initialPos = {x: 10, y: 10};
+    snakeHead = EntityManager.createEntity("snakeHead");
     snakeHead.addComponent(new PositionComponent(Grid.getTile(initialPos.x, initialPos.y).x, Grid.getTile(initialPos.x, initialPos.y).y));
     snakeHead.addComponent(new RenderComponent(Grid.tileWidth, Grid.tileHeight, "images/snake/neon_snake_head.png"));
     snakeHead.addComponent(new GridPosition(initialPos.x, initialPos.y));
     snakeHead.addComponent(new SnakeHead());
     Grid.putAt(initialPos.x, initialPos.y, snakeHead);
+    //score
+    score = 0;
+}
+
+function init() {
+    initializeEntities();
 
     //add systems
     SystemManager.addSystem(new RenderSystem());
@@ -296,6 +342,25 @@ function game_loop() {
         SystemManager.systems[i].update();
     }
     EntityManager.sweepRemovalOfComponents();
+
+    //temporary place for this
+    renderScore();
+}
+
+var score = 0;
+highScore = persistentStorage.get("highScore") ? persistentStorage.get("highScore") : 0;
+
+function renderScore() {
+    context.font = "20px Arial";
+    context.fillStyle = "white";
+    context.fillText("Score: " + score + " | High Score: " + highScore, 0, 15);
+}
+
+function incrementScore() {
+    score++;
+    if (score > highScore) {
+        highScore = score;
+    }
 }
 
 
