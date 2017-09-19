@@ -412,7 +412,7 @@ function makeFoodRotten() {
 }
 function resetFoodTimeout() {
     clearInterval(rottenFoodTimeout);
-    rottenFoodTimeout = setInterval(makeFoodRotten, 5000);
+    rottenFoodTimeout = setInterval(makeFoodRotten, 10000);
 }
 
 init();
