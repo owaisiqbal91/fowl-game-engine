@@ -170,11 +170,29 @@ function LifeComponent(life) {
         x: this.speed * Math.cos(angleInRadian),
         y: -1 * this.speed * Math.sin(angleInRadian)
     };
-
+    
     this.radial = options.radial || { x: 0, y: 0};
     this.tangential = options.tangential || { x: 0, y: 0};
     this.forces = options.forces || { x: 0, y: 0};
 
+ }
+
+ PhysicsComponent.prototype.setAngle = function(angle) {
+    this.angle = angle;
+    this.setVelocity();
+ }
+
+ PhysicsComponent.prototype.setSpeed = function(speed) {
+    this.speed = speed;
+    this.setVelocity();
+ }
+
+ PhysicsComponent.prototype.setVelocity = function() {
+    var angleInRadian = Utils.getAngleInRadian(this.angle);
+    this.velocity = {
+        x: this.speed * Math.cos(angleInRadian),
+        y: -1 * this.speed * Math.sin(angleInRadian)
+    };
  }
 
 
@@ -451,6 +469,9 @@ class PhysicsSystem extends System {
         pc.x += velocity.x * deltaTime;
         pc.y += velocity.y * deltaTime;
 
+        pc.x = pc.x + speed * Math.cos((rc.rotateAngle - 90) * Math.PI / 180);
+        pc.y = pc.y + speed * Math.sin((rc.rotateAngle - 90) * Math.PI / 180);
+
     }
 }
 
@@ -482,7 +503,7 @@ ParticleRenderComponent.prototype.constructor = ParticleRenderComponent;
 
 class ParticleSystem extends System {
     constructor() {
-        var signature = BitUtils.getBitEquivalentForComponent(["PositionComponent", "RenderComponent", "ParticleEmitterComponent"]);
+        var signature = BitUtils.getBitEquivalentForComponent(["PositionComponent", "RenderComponent", "PhysicsComponent", "ParticleEmitterComponent"]);
         super(signature);
     }
 
@@ -516,9 +537,19 @@ class ParticleSystem extends System {
         for (var i = 0; i < entities.length; i++) {
             var entity = entities[i];
             var pc = entity.components[PositionComponent.prototype.constructor.name];
+            var rc = entity.components[RenderComponent.prototype.constructor.name];
+            var physics = entity.components[PhysicsComponent.prototype.constructor.name];
             var pec = entity.components[ParticleEmitterComponent.prototype.constructor.name];
 
-            pec.update(pc);
+            var parent = {
+                x : pc.x + rc.image.width / 2,
+                y : pc.y + rc.image.height / 2,
+                rotateAngle : rc.rotateAngle
+            };
+            if (physics) {
+                parent.physics = physics;
+            };
+            pec.update(parent);
         }
     }
 
@@ -541,7 +572,7 @@ function ParticleRenderer() {
 
         return canvas;
     }
-    this.renderParticleTexture =  function(context, particle) {
+    this.renderParticleTexture =  function(context, particle, parent) {
         particle.buffer = particle.buffer || this.getBuffer(particle.texture);
         var bufferContext = particle.buffer.getContext('2d');
         var w = (particle.texture.width * 1) || 0;
@@ -562,12 +593,12 @@ function ParticleRenderer() {
         context.drawImage(particle.buffer, 0, 0, particle.buffer.width, particle.buffer.height, x, y, w, h);
     }
 
-    this.render = function(particle) {
+    this.render = function(particle, parent) {
         if (particle) {
             if (particle.texture) {
                 if (Array.isArray(particle.color)) {
                     context.globalCompositeOperation = 'lighter';
-                    this.renderParticleTexture(context, particle);
+                    this.renderParticleTexture(context, particle, parent);
                 }
             } else {
                 if (Array.isArray(particle.color)) {
@@ -588,6 +619,7 @@ function ParticleRenderer() {
 /* Emitter */
 function ParticleEmitterComponent(config) {
     this.config = config;
+    this.particleRenderer = new ParticleRenderer();
 }
 
 ParticleEmitterComponent.prototype = {
@@ -605,7 +637,7 @@ ParticleEmitterComponent.prototype = {
 
         for (var i = 0; i < this.particleCount; ++i) {
             this.updateParticle(this.particlePool[i], 0.02, i, parent);
-            this.particleRenderer.render(this.particlePool[i]);
+            this.particleRenderer.render(this.particlePool[i], parent);
         }
     },
 
@@ -629,18 +661,28 @@ ParticleEmitterComponent.prototype = {
         this.startColorVariance = config.startColorVariance;
         this.endColor = config.endColor;
         this.endColorVariance = config.endColorVariance || [0, 0, 0, 0];
-        if(config.texture) {
-            this.texture = config.texture;
-        }
-        this.particleRenderer = new ParticleRenderer();
+        this.texture = config.texture;
         this.particleCount = 0;
     },
 
     start : function() {
         this.particlePool = [];
 
-        for (var i = 0; i < this.totalParticles; ++i) {
+        for (var i = 0; i < this.totalParticles; i++) {
             var particle = new Particle("particle" + i, "particle" + i);
+            particle = this.initializeParticle(particle);
+            this.particlePool.push(particle);
+        }
+
+        this.particleCount = 0;
+        this.particlesEmitted = 0;  
+    },
+
+    reset : function() {
+        this.particlePool = [];
+
+        for (var i = 0; i < this.totalParticles; i++) {
+            var particle = new Particle("resetparticle" + i, "resetparticle" + i);
             particle = this.initializeParticle(particle);
             this.particlePool.push(particle);
         }
@@ -710,6 +752,16 @@ ParticleEmitterComponent.prototype = {
 
     updateParticle : function(particle, deltaTime, currentIndex, parent) {
         if (particle.lifeNow > 0) {
+
+            if (parent && parent.physics) {
+                particle.radial.x += parent.physics.radial.x;
+                particle.radial.y += parent.physics.radial.y;
+                particle.tangential.x += parent.physics.tangential.x;
+                particle.tangential.y += parent.physics.tangential.y;
+                particle.velocity.x += parent.physics.velocity.x;
+                particle.velocity.y += parent.physics.velocity.y;
+            };
+
             particle.forces.x = particle.radial.x + particle.tangential.x + particle.gravity.x;
             particle.forces.y = particle.radial.y + particle.tangential.y + particle.gravity.y;
 
@@ -722,6 +774,16 @@ ParticleEmitterComponent.prototype = {
             particle.x += particle.velocity.x * deltaTime;
             particle.y += particle.velocity.y * deltaTime;
 
+            if (parent.rotateAngle) {
+                var newCoordinatesBasedOnRotation = Utils.getPointBasedOnRotationOfParent(parent.x, parent.y, particle.x, particle.y, parent.rotateAngle + 90);
+                particle.x = newCoordinatesBasedOnRotation.x;
+                particle.y = newCoordinatesBasedOnRotation.y;
+
+                //find gravity based on angle
+
+
+            };
+            
             particle.lifeNow -= deltaTime;
 
             if (particle.color) {
@@ -793,6 +855,24 @@ Utils = {
     random11: function() {
         return this.random(-1, 1, true);
     },
+
+    //mx, my = pivot, cx, cy = point, angle in degrees
+    getPointBasedOnRotationOfParent: function(mx, my, cx, cy, angle) {
+
+        var x, y, dist, diffX, diffY;
+
+        // get distance from center to point
+        diffX = cx - mx;
+        diffY = cy - my;
+        dist = Math.sqrt(diffX * diffX + diffY * diffY);
+
+        var angleInRadian = Utils.getAngleInRadian(angle);
+
+        var x = mx + dist * Math.cos(angleInRadian);
+        var y = my + dist * Math.sin(angleInRadian);
+
+        return { x: x, y: y };
+    }
 }
 
 BitUtils = {

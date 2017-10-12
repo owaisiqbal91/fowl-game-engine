@@ -75,7 +75,7 @@ class MissileSystem extends System {
 
 class AsteroidSystem extends System {
 	constructor() {
-        var signature = BitUtils.getBitEquivalentForComponent(["PositionComponent", "RenderComponent", "Asteroid"]);
+        var signature = BitUtils.getBitEquivalentForComponent(["PositionComponent", "RenderComponent", "PhysicsComponent", "ParticleEmitterComponent", "Asteroid"]);
         super(signature);
     }
 
@@ -106,11 +106,38 @@ class AsteroidSystem extends System {
     		// increase score
     		incrementScore();
 
+    		var pc = entity.components[PositionComponent.prototype.constructor.name];
+
+    		var physics = entity.components[PhysicsComponent.prototype.constructor.name];
+    		physics.setSpeed(0);
+
     		// change particle system to show some effect
 
-    		//remove the entity
-    		EntityManager.removeEntity(entity);
+			var pec = entity.components[ParticleEmitterComponent.prototype.constructor.name];
+			pec.configure({
+				totalParticles : 25,
+				emissionRate : 25 / 3,
+				position : { x: pc.x, y: pc.y },
+				positionVariance : { x: 10, y: 10 },
+				gravity : { x : 0, y : 0 },
+				angle : 90,
+				angleVariance : 360,
+				speed : 50,
+				speedVariance : 1,
+				life : 3,
+				lifeVariance : 1,
+				radius : 10,
+				radiusVariance : 10
+			});
+
+			pec.reset();
+
+			setTimeout(function() {
+				//remove the entity
+    			EntityManager.removeEntity(entity);
+			}, 1000);
     		
+
     		//create new one
         }
     }
@@ -141,7 +168,7 @@ class AsteroidSystem extends System {
 
 class MovementSystem extends System {
     constructor() {
-        var signature = BitUtils.getBitEquivalentForComponent(["PositionComponent", "RenderComponent", "Rocket"]);       
+        var signature = BitUtils.getBitEquivalentForComponent(["PositionComponent", "RenderComponent", "PhysicsComponent", "Rocket"]);       
         super(signature);
     }
 
@@ -156,7 +183,7 @@ class MovementSystem extends System {
         	this.accelerateEntity();
         }
         else if (data.key === "down") {
-        	
+        	this.stopEntity();
         }
         else if (data.key === "left") {
             this.rotateEntity(-10);
@@ -184,18 +211,24 @@ class MovementSystem extends System {
     rotateEntity(rotateAngle) {
         for (var key in this.relevantEntitiesMap) {
             var entity = this.relevantEntitiesMap[key];
-            var rc = entity.components[RenderComponent.prototype.constructor.name];
-            rc.rotateAngle += rotateAngle;
+            var physics = entity.components[PhysicsComponent.prototype.constructor.name];
+            physics.setAngle(physics.angle + rotateAngle);
         }
     }
 
     accelerateEntity() {
     	for (var key in this.relevantEntitiesMap) {
             var entity = this.relevantEntitiesMap[key];
-            var pc = entity.components[PositionComponent.prototype.constructor.name];
-            var rc = entity.components[RenderComponent.prototype.constructor.name];
-            pc.x = pc.x + 5 * Math.cos((rc.rotateAngle - 90) * Math.PI / 180);
-	        pc.y = pc.y + 5 * Math.sin((rc.rotateAngle - 90) * Math.PI / 180);
+            var physics = entity.components[PhysicsComponent.prototype.constructor.name];
+            physics.setSpeed(1);
+        }
+    }
+
+    stopEntity() {
+    	for (var key in this.relevantEntitiesMap) {
+            var entity = this.relevantEntitiesMap[key];
+            var physics = entity.components[PhysicsComponent.prototype.constructor.name];
+            physics.setSpeed(0);
         }
     }
 
@@ -260,6 +293,7 @@ function initializeEntities() {
     sky.addComponent(new PositionComponent(canvas.width / 2, canvas.height / 2));
     sky.addComponent(new RenderComponent(canvas.width, canvas.height, "images/transparent.png"));
     sky.addComponent(new ParticleEmitterComponent(skySystemConfig));
+    sky.addComponent(new PhysicsComponent({}));
     sky.addComponent(new Sky());
 
 
@@ -317,19 +351,19 @@ function initializeEntities() {
 
     asteroidConfigs.forEach(function(asteroidConfig) {
 		var asteroidSystemConfig = {
-			totalParticles : 10,
-			emissionRate : 60 / 2,
+			totalParticles : 50,
+			emissionRate : 25,
 			position: 'over',
-			positionVariance: { x: 20, y: 20},
+			positionVariance: { x: 10, y: 10},
 			angle : 90,
 			angleVariance : 360,
-			speed : 0.5,
+			speed : 2,
 			speedVariance : 0,
-			life : 5,
+			life : 1,
 			lifeVariance : 1,
-			radius : 2,
+			radius : 50,
 			radiusVariance : 2,
-			startColor: [255, 10, 10, 1],
+			startColor: [255, 100, 100, 1],
 			startColorVariance: [0, 0, 51, 0.1],
 			endColor: [0, 0, 0, 1],
 			texture: "images/particle.png"
@@ -339,7 +373,7 @@ function initializeEntities() {
 		asteroid = EntityManager.createEntity("asteroid");
 		asteroid.addComponent(new PositionComponent(asteroidConfig.position.x, asteroidConfig.position.y));
 		asteroid.addComponent(new RenderComponent(50, 50, "images/asteroid.png"));
-		//asteroid.addComponent(new ParticleEmitterComponent(asteroidSystemConfig));
+		asteroid.addComponent(new ParticleEmitterComponent(asteroidSystemConfig));
 		asteroid.addComponent(new PhysicsComponent(asteroidConfig.physics ? asteroidConfig.physics : {}));
 		asteroid.addComponent(new Collidable());
     	asteroid.addComponent(new Asteroid());
@@ -352,7 +386,7 @@ function initializeEntities() {
 		emissionRate : 20,
 		position: 'behind',
 		positionVariance: { x: 10, y: 0},
-		gravity : { x: 0, y: 200 },
+		gravity : { x: 0, y: 40 },
 		angle : 270,
 		angleVariance : 10,
 		speed : 10,
@@ -372,6 +406,7 @@ function initializeEntities() {
     rocket.addComponent(new PositionComponent(300, 200));
     rocket.addComponent(new RenderComponent(50, 50, "images/rocket.png"));
     rocket.addComponent(new ParticleEmitterComponent(rocketFireConfig));
+    rocket.addComponent(new PhysicsComponent({}));
     rocket.addComponent(new Collidable());
     rocket.addComponent(new Rocket());
 
