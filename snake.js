@@ -54,7 +54,8 @@ function Wall() {
 
 class GridSystem extends System {
     constructor() {
-        super(0b110010000);
+        var signature = BitUtils.getBitEquivalentForComponent(["PositionComponent", "RenderComponent", "GridPosition"]);
+        super(signature);
     }
 
     update() {
@@ -71,8 +72,9 @@ class GridSystem extends System {
 }
 
 class FoodSystem extends System {
-    constructor(food) {
-        super(0b110011000);
+    constructor() {
+        var signature = BitUtils.getBitEquivalentForComponent(["PositionComponent", "RenderComponent", "GridPosition", "Food"]);
+        super(signature);
         this.food = food;
         this.rotten = false;
     }
@@ -129,7 +131,8 @@ class FoodSystem extends System {
 
 class SnakeSegmentSystem extends System {
     constructor(snakeHead) {
-        super(0b110010010);
+        var signature = BitUtils.getBitEquivalentForComponent(["PositionComponent", "RenderComponent", "GridPosition", "SnakeSegment"]);
+        super(signature);
         this.snakeHead = snakeHead;
     }
 
@@ -207,7 +210,8 @@ class SnakeSegmentSystem extends System {
 
 class MovementSystem extends System {
     constructor() {
-        super(0b110010100);
+        var signature = BitUtils.getBitEquivalentForComponent(["PositionComponent", "RenderComponent", "GridPosition", "SnakeHead"]);       
+        super(signature);
     }
 
     init() {
@@ -282,7 +286,8 @@ class MovementSystem extends System {
 
 class WallSystem extends System {
     constructor() {
-        super(0b000000001);
+        var signature = BitUtils.getBitEquivalentForComponent(["Wall"]);       
+        super(signature);
     }
 
     init() {
@@ -302,7 +307,8 @@ class WallSystem extends System {
 
 class GameStateSystem extends System {
     constructor() {
-        super(0b000000000);
+        var signature = BitUtils.getBitEquivalentForComponent([]);       
+        super(signature);
     }
 
     init() {

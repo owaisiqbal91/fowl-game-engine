@@ -14,7 +14,8 @@ function Fixed() {
 
 class DraggableSystem extends System {
     constructor() {
-        super(0b1100100);
+        var signature = BitUtils.getBitEquivalentForComponent(["PositionComponent", "RenderComponent", "Draggable"]);
+        super(signature);
     }
 
     init() {
@@ -37,7 +38,9 @@ class DraggableSystem extends System {
 
 class DraggedSystem extends System {
     constructor() {
-        super(0b1100010);
+        var signature = BitUtils.getBitEquivalentForComponent(["PositionComponent", "RenderComponent", "Dragged"]);
+        console.log(signature);
+        super(signature);
     }
 
     init() {
@@ -82,7 +85,8 @@ class DraggedSystem extends System {
 
 class FixedSystem extends System {
     constructor() {
-        super(0b1100001);
+        var signature = BitUtils.getBitEquivalentForComponent(["PositionComponent", "RenderComponent", "Fixed"]);
+        super(signature);
     }
 
     init() {
@@ -113,7 +117,8 @@ class FixedSystem extends System {
 
 class CombiningSystem extends System {
     constructor() {
-        super(0b1101000);
+        var signature = BitUtils.getBitEquivalentForComponent(["PositionComponent", "RenderComponent", "Collidable"]);
+        super(signature);
         this.rules = {
             "fire + water": "steam",
             "water + fire": "steam",
