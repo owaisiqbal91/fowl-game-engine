@@ -1,6 +1,4 @@
-canvas = document.getElementById("snake");
-context = canvas.getContext('2d');
-
+CanvasManager.initializeCanvas("snake");
 
 class Grid {
     static getTile(x, y) {
@@ -14,6 +12,13 @@ class Grid {
         }
         Grid.occupiedCells[x + "," + y] = entity;
         Grid.occupyingEntities[entity.id] = x + "," + y;
+    }
+
+    static removeFrom(x, y, entity){
+        if (Grid.occupyingEntities[entity.id]) {
+            delete Grid.occupiedCells[Grid.occupyingEntities[entity.id]];
+        }
+        delete Grid.occupyingEntities[entity.id];
     }
 
     static getAt(x, y) {
@@ -65,18 +70,19 @@ class GridSystem extends System {
 }
 
 class FoodSystem extends System {
-    constructor() {
+
+    constructor(food) {
         var signature = BitUtils.getBitEquivalentForComponent(["PositionComponent", "RenderComponent", "GridPosition", "Food"]);
         super(signature);
+        this.food = food;
+        this.rotten = false;
     }
 
     init() {
-        PubSub.subscribe("collision", this.handleCollision.bind(this))
-        for (var key in this.relevantEntitiesMap) {
-            var food = this.relevantEntitiesMap[key];
-            this.generateFoodAtRandomPosition(food);
-            break;
-        }
+        PubSub.subscribe("collision", this.handleCollision.bind(this));
+        PubSub.subscribe("rotFood", this.rotTheFood.bind(this));
+        PubSub.subscribe("gameOver", this.gameOver.bind(this));
+        this.generateFoodAtRandomPosition(this.food);
     }
 
     update() {
@@ -85,8 +91,13 @@ class FoodSystem extends System {
     handleCollision(topic, data) {
         var entity = data.entity;
         if (this.relevantEntitiesMap[entity.id]) {
-            PubSub.publishSync("foodEaten", {});
-            incrementScore();
+            if(!this.rotten){
+                PubSub.publishSync("foodEaten", {});
+                incrementScore();
+            } else {
+                PubSub.publishSync("rottenFoodEaten", {});
+                decrementScore();
+            }
             this.generateFoodAtRandomPosition(entity);
         }
     }
@@ -100,6 +111,20 @@ class FoodSystem extends System {
         gp.x = gridX;
         gp.y = gridY;
         Grid.putAt(gridX, gridY, food);
+        var rc = food.components[RenderComponent.prototype.constructor.name];
+        rc.setSrc("images/snake/neon_food.png");
+        resetFoodTimeout();
+        this.rotten = false;
+    }
+
+    rotTheFood(topic, data) {
+        var rc = this.food.components[RenderComponent.prototype.constructor.name];
+        rc.setSrc("images/snake/neon_rotten_food.png");
+        this.rotten = true;
+    }
+
+    gameOver(topic, data) {
+        this.generateFoodAtRandomPosition(this.food);
     }
 }
 
@@ -116,6 +141,7 @@ class SnakeSegmentSystem extends System {
 
         PubSub.subscribe("collision", this.handleCollision.bind(this));
         PubSub.subscribe("foodEaten", this.foodEaten.bind(this));
+        PubSub.subscribe("rottenFoodEaten", this.rottenFoodEaten.bind(this));
         PubSub.subscribe("gameOver", this.gameOver.bind(this));
         PubSub.subscribe("snakeMove", this.moveSegments.bind(this));
     }
@@ -130,6 +156,8 @@ class SnakeSegmentSystem extends System {
 
     gameOver() {
         for(var i=1; i<this.segments.length; i++){
+            var gc = this.segments[i].components[GridPosition.prototype.constructor.name];
+            Grid.removeFrom(gc.x, gc.y, this.segments[i]);
             EntityManager.removeEntity(this.segments[i]);
         }
         this.segments = [];
@@ -147,6 +175,16 @@ class SnakeSegmentSystem extends System {
             snakeSegment.addComponent(new GridPosition(-1, -1));
             snakeSegment.addComponent(new SnakeSegment());
             this.segments.push(snakeSegment);
+        }
+    }
+    rottenFoodEaten() {
+        if(this.segments.length > 3){
+            for(var i=this.segments.length-3; i<this.segments.length; i++){
+                var gc = this.segments[i].components[GridPosition.prototype.constructor.name];
+                Grid.removeFrom(gc.x, gc.y, this.segments[i]);
+                EntityManager.removeEntity(this.segments[i]);
+            }
+            this.segments = this.segments.slice(0, this.segments.length - 3);
         }
     }
 
@@ -278,7 +316,6 @@ class GameStateSystem extends System {
 
     resetGameState(topic, data) {
         score = 0;
-        persistentStorage.persist("highScore", highScore);
     }
 
     update() {
@@ -294,7 +331,10 @@ var persistentStorage = new PersistentStorage();
 var snakeHead;
 
 var initialPos = {x: 10, y: 10};
-function initializeEntities() {
+function init() {
+    ComponentManager.initialize(["GridPosition", "Food", "SnakeHead", "SnakeSegment", "Wall"])
+
+    //initialize entities
     //generate walls, hardcoding for now
     var wallRenderComponent = new RenderComponent(Grid.tileWidth, Grid.tileHeight, "images/snake/neon_wall.png");
     for (var i = 0; i < Grid.totalColumns; i++) {
@@ -327,34 +367,24 @@ function initializeEntities() {
     Grid.putAt(initialPos.x, initialPos.y, snakeHead);
     //score
     score = 0;
-}
-
-function init() {
-    ComponentManager.initialize(["GridPosition", "Food", "SnakeHead", "SnakeSegment", "Wall"])
-    initializeEntities();
 
     //add systems
-    var rs = new RenderSystem();
-    rs.addAfterRenderCallback(renderScore);
-    SystemManager.addSystem(rs);
     SystemManager.addSystem(new GridSystem());
     SystemManager.addSystem(new MovementSystem());
     SystemManager.addSystem(new InputSystem());
-    SystemManager.addSystem(new FoodSystem());
+    SystemManager.addSystem(new FoodSystem(food));
     SystemManager.addSystem(new SnakeSegmentSystem(snakeHead));
     SystemManager.addSystem(new WallSystem());
     SystemManager.addSystem(new GameStateSystem());
-}
+    var rs = new RenderSystem();
+    rs.addAfterRenderCallback(renderScore);
+    SystemManager.addSystem(rs);
 
-function game_loop() {
-    for (var i = 0; i < SystemManager.systems.length; i++) {
-        SystemManager.systems[i].update();
-    }
-    EntityManager.sweepRemovalOfComponents();
+    startGameLoop(100);
 }
 
 var score = 0;
-highScore = persistentStorage.get("highScore") ? persistentStorage.get("highScore") : 0;
+var highScore = persistentStorage.get("highScore") ? persistentStorage.get("highScore") : 0;
 
 function renderScore() {
     context.font = "20px Arial";
@@ -366,9 +396,23 @@ function incrementScore() {
     score++;
     if (score > highScore) {
         highScore = score;
+        persistentStorage.persist("highScore", highScore);
     }
 }
 
+function decrementScore() {
+    if(score != 0){
+        score--;
+    }
+}
+
+rottenFoodTimeout = setInterval(makeFoodRotten, 10000);
+function makeFoodRotten() {
+    PubSub.publishSync("rotFood", {});
+}
+function resetFoodTimeout() {
+    clearInterval(rottenFoodTimeout);
+    rottenFoodTimeout = setInterval(makeFoodRotten, 10000);
+}
 
 init();
-setInterval(game_loop, 100);
