@@ -1,5 +1,4 @@
-canvas = document.getElementById("alchemy");
-context = canvas.getContext('2d');
+CanvasManager.initializeCanvas("alchemy");
 
 function Draggable() {
 }
@@ -39,7 +38,6 @@ class DraggableSystem extends System {
 class DraggedSystem extends System {
     constructor() {
         var signature = BitUtils.getBitEquivalentForComponent(["PositionComponent", "RenderComponent", "Dragged"]);
-        console.log(signature);
         super(signature);
     }
 
@@ -72,8 +70,8 @@ class DraggedSystem extends System {
             var pc = entity.components[PositionComponent.prototype.constructor.name];
             var rc = entity.components[RenderComponent.prototype.constructor.name];
 
-            if (pc.x < 0 || (pc.x + rc.image.width) > (canvas.getBoundingClientRect().right - 100)
-                || pc.y < 0 || (pc.y + rc.image.height) > canvas.getBoundingClientRect().bottom) {
+            if (pc.x < 0 || (pc.x + rc.width) > (canvas.getBoundingClientRect().right - 100)
+                || pc.y < 0 || (pc.y + rc.height) > canvas.getBoundingClientRect().bottom) {
                 EntityManager.removeEntity(entity);
             }
             else {
@@ -104,12 +102,11 @@ class FixedSystem extends System {
 
             var newDraggableEntity = EntityManager.createEntity(entity.name);
             highestZ += 1;
-            console.log(highestZ);
             newDraggableEntity.addComponent(new PositionComponent(pc.x, pc.y, highestZ));
             newDraggableEntity.addComponent(rc);
             newDraggableEntity.addComponent(new Input());
             newDraggableEntity.addComponent(new Draggable());
-            newDraggableEntity.addComponent(new Collidable());
+            newDraggableEntity.addComponent(new Collidable(BOUNDING_BOX.RECTANGULAR, {}, false));
             newDraggableEntity.addComponent(new Dragged(data["mouseX"] - pc.x, data["mouseY"] - pc.y));
         }
     }
@@ -145,7 +142,7 @@ class CombiningSystem extends System {
             combinedEntity.addComponent(new RenderComponent(74, 74, "images/"+combined+".png"));
             combinedEntity.addComponent(new Input());
             combinedEntity.addComponent(new Draggable());
-            combinedEntity.addComponent(new Collidable());
+            combinedEntity.addComponent(new Collidable(BOUNDING_BOX.RECTANGULAR, {}, false));
             EntityManager.removeEntity(data.entity1);
             EntityManager.removeEntity(data.entity2);
 
@@ -175,6 +172,8 @@ function init() {
     SystemManager.addSystem(new DraggedSystem());
     SystemManager.addSystem(new CollisionSystem());
     SystemManager.addSystem(new CombiningSystem());
+
+    startGameLoop(30);
 }
 
 var currentOffset = 0;
@@ -190,16 +189,7 @@ function createFixedEntity(name) {
 init();
 var highestZ = 0;
 
-function game_loop() {
-    for (var i = 0; i < SystemManager.systems.length; i++) {
-        SystemManager.systems[i].update();
-    }
-    EntityManager.sweepRemovalOfComponents();
-}
-
 function renderBackground() {
     context.fillStyle = "#FFB44E";
     context.fillRect(canvas.width-100, 0, 100, canvas.clientHeight);
 }
-
-setInterval(game_loop, 30);

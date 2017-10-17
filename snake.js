@@ -1,6 +1,4 @@
-canvas = document.getElementById("snake");
-context = canvas.getContext('2d');
-
+CanvasManager.initializeCanvas("snake");
 
 class Grid {
     static getTile(x, y) {
@@ -72,7 +70,7 @@ class GridSystem extends System {
 }
 
 class FoodSystem extends System {
-    constructor() {
+    constructor(food) {
         var signature = BitUtils.getBitEquivalentForComponent(["PositionComponent", "RenderComponent", "GridPosition", "Food"]);
         super(signature);
         this.food = food;
@@ -113,14 +111,14 @@ class FoodSystem extends System {
         gp.y = gridY;
         Grid.putAt(gridX, gridY, food);
         var rc = food.components[RenderComponent.prototype.constructor.name];
-        rc.image.src = "images/snake/neon_food.png";
+        rc.setSrc("images/snake/neon_food.png");
         resetFoodTimeout();
         this.rotten = false;
     }
 
     rotTheFood(topic, data) {
         var rc = this.food.components[RenderComponent.prototype.constructor.name];
-        rc.image.src = "images/snake/neon_rotten_food.png";
+        rc.setSrc("images/snake/neon_rotten_food.png");
         this.rotten = true;
     }
 
@@ -380,17 +378,12 @@ function init() {
     var rs = new RenderSystem();
     rs.addAfterRenderCallback(renderScore);
     SystemManager.addSystem(rs);
-}
 
-function game_loop() {
-    for (var i = 0; i < SystemManager.systems.length; i++) {
-        SystemManager.systems[i].update();
-    }
-    EntityManager.sweepRemovalOfComponents();
+    startGameLoop(100);
 }
 
 var score = 0;
-highScore = persistentStorage.get("highScore") ? persistentStorage.get("highScore") : 0;
+var highScore = persistentStorage.get("highScore") ? persistentStorage.get("highScore") : 0;
 
 function renderScore() {
     context.font = "20px Arial";
@@ -422,4 +415,3 @@ function resetFoodTimeout() {
 }
 
 init();
-setInterval(game_loop, 100);
