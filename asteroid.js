@@ -49,7 +49,7 @@ class RocketSystem extends System {
             if (data.id == entity.id) {
 
                 //stop everything
-                PubSub.publishSync("stopEntity", {});
+                //PubSub.publishSync("stopEntity", {});
 
 
                 var rc = entity.components[RenderComponent.prototype.constructor.name];
@@ -383,6 +383,44 @@ class RestartSystem extends System {
 var persistentStorage = new PersistentStorage();
 var skyParticleEmitterSystem, asteroidEmitterSystem, sky, asteroid, asteroids = [], rocket;
 
+function createAsteroidWithRandomParameters() {
+    var config = {
+        position : { x : Utils.random(0, 700), y : Utils.random(0, 700) },
+        physics : {
+            speed : Utils.random(2, 5),
+            angle : Utils.random(0, 360)
+        }
+    };
+
+    var asteroidSystemConfig = {
+        totalParticles : 30,
+        emissionRate : 10,
+        position: 'over',
+        positionVariance: { x: 10, y: 10},
+        angle : 90,
+        angleVariance : 360,
+        speed : 1,
+        speedVariance : 0,
+        life : 1,
+        lifeVariance : 1,
+        radius : 2,
+        radiusVariance : 2,
+        startColor: [255, 100, 100, 1],
+        startColorVariance: [0, 0, 51, 0.1],
+        endColor: [0, 0, 0, 1],
+        texture: "images/particle.png"
+    }
+
+    //create asteroid system
+    asteroid = EntityManager.createEntity("asteroid");
+    asteroid.addComponent(new PositionComponent(config.position.x, config.position.y));
+    asteroid.addComponent(new RenderComponent(35, 35, "images/asteroid.png"));
+    asteroid.addComponent(new ParticleEmitterComponent(asteroidSystemConfig));
+    asteroid.addComponent(new PhysicsComponent(config.physics ? config.physics : {}));
+    asteroid.addComponent(new Collidable(BOUNDING_BOX.CIRCULAR, {radius: 15}, true));
+    asteroid.addComponent(new Asteroid());
+
+}
 function initializeEntities() {
 
 	var skySystemConfig = {
@@ -409,104 +447,28 @@ function initializeEntities() {
     sky.addComponent(new Sky());
 
 
-    var asteroidConfigs = [
-    	{
-    		position : { x : 0, y : 0 },
-    		physics : {
-    			speed : 3,
-    			angle : 315
-    		}
-    	},
-    	{
-			position : { x : 600, y : 600 },
-			physics : {
-    			speed : 3,
-    			angle : 50
-    		}
-    	},
-    	{
-    		position : { x : 200, y : 0 },
-    		physics : {
-    			speed : 3.5,
-    			angle : 300
-    		}
-    	},
-    	{
-    		position : { x : 500, y : 600 },
-    		physics : {
-    			speed : 4,
-    			angle : 70
-    		}
-    	},
-    	{
-    		position : { x : 100, y : 500 },
-    		physics : {
-    			speed : 2,
-    			angle : 60
-    		}
-    	},
-    	{
-    		position : { x : 600, y : 500 },
-    		physics : {
-    			speed : 3,
-    			angle : 110
-    		}
-    	},
-    	{
-    		position : { x : 800, y : 100 },
-    		physics : {
-    			speed : 2.5,
-    			angle : 190
-    		}
-    	}
-    ]
+    createAsteroidWithRandomParameters();
+    createAsteroidWithRandomParameters();
+    createAsteroidWithRandomParameters();
+    createAsteroidWithRandomParameters();
+    createAsteroidWithRandomParameters();
+    createAsteroidWithRandomParameters();
+    createAsteroidWithRandomParameters();
 
-    asteroidConfigs.forEach(function(asteroidConfig) {
-		var asteroidSystemConfig = {
-			totalParticles : 30,
-			emissionRate : 10,
-			position: 'over',
-			positionVariance: { x: 10, y: 10},
-			angle : 90,
-			angleVariance : 360,
-			speed : 1,
-			speedVariance : 0,
-			life : 1,
-			lifeVariance : 1,
-			radius : 2,
-			radiusVariance : 2,
-			startColor: [255, 100, 100, 1],
-			startColorVariance: [0, 0, 51, 0.1],
-			endColor: [0, 0, 0, 1],
-			texture: "images/particle.png"
-		}
-
-		//create asteroid system
-		asteroid = EntityManager.createEntity("asteroid");
-		asteroid.addComponent(new PositionComponent(asteroidConfig.position.x, asteroidConfig.position.y));
-		asteroid.addComponent(new RenderComponent(35, 35, "images/asteroid.png"));
-		asteroid.addComponent(new ParticleEmitterComponent(asteroidSystemConfig));
-		asteroid.addComponent(new PhysicsComponent(asteroidConfig.physics ? asteroidConfig.physics : {}));
-		asteroid.addComponent(new Collidable(BOUNDING_BOX.CIRCULAR, {radius: 15}, true));
-    	asteroid.addComponent(new Asteroid());
-
-	    
-    });
-    
     var rocketFireConfig = {
-		totalParticles : 80,
-		emissionRate : 40,
+		totalParticles : 40,
+		emissionRate : 20,
 		position: 'behind',
 		positionVariance: { x: 10, y: 0},
 		gravity : { x: 0, y: 40 },
 		angle : 270,
 		angleVariance : 10,
 		speed : 2,
-		speedVariance : 5,
+		speedVariance : 1,
 		life : 2,
-		lifeVariance : 0,
-		radius : 5,
-		radiusVariance : 5,
+		lifeVariance : 1,
+		radius : 2,
+		radiusVariance : 1,
 		startColor: [51, 102, 178.5, 1],
 		startColorVariance: [0, 0, 51, 0.1],
 		endColor: [0, 0, 0, 1],

@@ -706,7 +706,8 @@ class ParticleSystem extends System {
             var pc = entity.components[PositionComponent.prototype.constructor.name];
             var pec = entity.components[ParticleEmitterComponent.prototype.constructor.name];
 
-            pec.config.position = this.getRelativePosition(pec.config.originalPosition, pc, rc);
+            pec.setOriginalPosition(pec.config.position);
+            pec.config.position = this.getRelativePosition(pec.config.position, pc, rc);
 
             pec.configure(pec.config);
 
@@ -719,14 +720,14 @@ class ParticleSystem extends System {
         var positionToReturn, pivot;
 
         pivot = {
-            x : pc.x + rc.width / 2,
-            y : pc.y + rc.height / 2
+            x : pc.x,// - rc.width / 2,
+            y : pc.y// - rc.height / 2
         }
 
         if (position == 'behind') {
             positionToReturn = {
                 x: pc.x + rc.width / 2,
-                y: pc.y + rc.height
+                y: pc.y
             }
         } else if (position == 'over') {
             positionToReturn = {
@@ -759,7 +760,7 @@ class ParticleSystem extends System {
             var physics = entity.components[PhysicsComponent.prototype.constructor.name];
             var pec = entity.components[ParticleEmitterComponent.prototype.constructor.name];
 
-            pec.updatePosition(this.getRelativePosition(pec.config.originalPosition, pc, rc));
+            pec.updatePosition(this.getRelativePosition(pec.originalPosition, pc, rc));
             pec.update();
         }
     }
@@ -772,16 +773,16 @@ function ParticleRenderer() {
     this.getBuffer = function (texture) {
         var size = '' + texture.width + 'x' + texture.height;
 
-        var canvas = this.bufferCache[size];
+        var canvasParticle = this.bufferCache[size];
 
-        if (!canvas) {
-            canvas = document.createElement('canvas');
-            canvas.width = texture.width;
-            canvas.height = texture.height;
-            this.bufferCache[size] = canvas;
+        if (!canvasParticle) {
+            canvasParticle = document.createElement('canvas');
+            canvasParticle.width = texture.width;
+            canvasParticle.height = texture.height;
+            this.bufferCache[size] = canvasParticle;
         }
 
-        return canvas;
+        return canvasParticle;
     }
     this.renderParticleTexture = function (context, particle) {
         particle.buffer = particle.buffer || this.getBuffer(particle.texture);
@@ -856,10 +857,13 @@ ParticleEmitterComponent.prototype = {
         this.position = newPos;
     },
 
+    setOriginalPosition: function(position) {
+        this.originalPosition = position;
+    },
+
     configure: function (config) {
         this.totalParticles = config.totalParticles || 20;
         this.emissionRate = config.emissionRate || 150 / 2;
-        this.originalPosition = config.position || {x: 0, y: 0};
         this.position = config.position || {x: 0, y: 0};
         this.positionVariance = config.positionVariance || {x: 0, y: 0};
         this.gravity = config.gravity || {x: 0, y: 0};
@@ -972,27 +976,6 @@ ParticleEmitterComponent.prototype = {
     updateParticle: function (particle, deltaTime, currentIndex) {
         if (particle.lifeNow > 0) {
 
-            if (parent && parent.physics) {
-                particle.radial.x += parent.physics.radial.x;
-                particle.radial.y += parent.physics.radial.y;
-                particle.tangential.x += parent.physics.tangential.x;
-                particle.tangential.y += parent.physics.tangential.y;
-                particle.velocity.x += parent.physics.velocity.x;
-                particle.velocity.y += parent.physics.velocity.y;
-
-                if (parent.rotateAngle >= -90 && parent.rotateAngle < 90) {
-                    particle.gravity.y = 40;
-                } else {
-                    particle.gravity.y = -40;
-                }
-                if (parent.rotateAngle > -180 && parent.rotateAngle < 0) {
-                    particle.gravity.x = 40;
-                } else {
-                    particle.gravity.x = -40;
-                }
-
-            };
-
             particle.forces.x = particle.radial.x + particle.tangential.x + particle.gravity.x;
             particle.forces.y = particle.radial.y + particle.tangential.y + particle.gravity.y;
 
@@ -1009,20 +992,6 @@ ParticleEmitterComponent.prototype = {
                 x: this.positionVariance.x * Utils.random11(),
                 y: this.positionVariance.y * Utils.random11()
             }
-
-            // if (this.op) {
-            //     PositionComponent.call(particle, this.op.x + this.position.x + positionDelta.x, this.op.y + this.position.y + positionDelta.y);
-            // };
-
-            if (parent.rotateAngle) {
-                var newCoordinatesBasedOnRotation = Utils.getPointBasedOnRotationOfParent(parent.x, parent.y, particle.x, particle.y, parent.rotateAngle + 90);
-                particle.x = newCoordinatesBasedOnRotation.x;
-                particle.y = newCoordinatesBasedOnRotation.y;
-
-                //find gravity based on angle
-                // if facing up ( 0 - 180 ), y is positive
-                // if facing side ( 90 - 270), x is positive
-            };
 
             particle.lifeNow -= deltaTime;
 

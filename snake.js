@@ -71,7 +71,7 @@ class GridSystem extends System {
 
 class FoodSystem extends System {
 
-    constructor() {
+    constructor(food) {
         var signature = BitUtils.getBitEquivalentForComponent(["PositionComponent", "RenderComponent", "GridPosition", "Food"]);
         super(signature);
         this.food = food;
