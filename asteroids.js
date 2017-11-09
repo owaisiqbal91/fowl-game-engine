@@ -1,5 +1,9 @@
 CanvasManager.initializeCanvas("asteroid", 200);
 
+function Sky() {
+
+}
+
 function Missile() {
 }
 
@@ -382,6 +386,7 @@ class MovementSystem extends System {
         this.currentDirection = this.left;
         PubSub.subscribe("keyDown", this.handleKeyDown.bind(this));
         PubSub.subscribe("keyUp", this.handleKeyUp.bind(this));
+        this.rotateEntity(5);
     }
 
     handleKeyDown(topic, data) {
@@ -498,12 +503,54 @@ class ExplosionSystem extends System {
 
 /*--------------------------------GAME INITIALIZATION AND LOOP-----------------------------------*/
 
-var rocket;
+var sky,rocket;
 
 function initializeEntities() {
+    var skySystemConfig = {
+        totalParticles : 150,
+        emissionRate : 150 / 2,
+        positionVariance : { x: 400, y: 300 },
+        gravity : { x : 0, y : 0 },
+        angle : 90,
+        angleVariance : 360,
+        speed : 20,
+        speedVariance : 1,
+        life : 10,
+        lifeVariance : 1,
+        radius : 1,
+        radiusVariance : 1
+    };
+
+    sky = EntityManager.createEntity("sky");
+    sky.addComponent(new PositionComponent(canvas.width / 2, canvas.height / 2));
+    sky.addComponent(new RenderComponent(canvas.width, canvas.height, "images/transparent.png"));
+    sky.addComponent(new ParticleEmitterComponent(skySystemConfig));
+    sky.addComponent(new PhysicsComponent({}));
+    sky.addComponent(new Sky());
+
+    var rocketFireConfig = {
+        totalParticles : 40,
+        emissionRate : 20,
+        position: 'behind',
+        positionVariance: { x: 10, y: 0},
+        gravity : { x: 0, y: 40 },
+        angle : 270,
+        angleVariance : 10,
+        speed : 2,
+        speedVariance : 1,
+        life : 2,
+        lifeVariance : 1,
+        radius : 2,
+        radiusVariance : 1,
+        startColor: [51, 102, 178.5, 1],
+        startColorVariance: [0, 0, 51, 0.1],
+        endColor: [0, 0, 0, 1],
+        texture: "images/particle.png"
+    }
     rocket = EntityManager.createEntity("rocket");
     rocket.addComponent(new PositionComponent(canvas.width / 2, canvas.clientHeight / 2));
     rocket.addComponent(new RenderComponent(50, 50, "images/rocket.png", ORIGIN.CENTER));
+    rocket.addComponent(new ParticleEmitterComponent(rocketFireConfig));
     rocket.addComponent(new PhysicsComponent({maxSpeed: 10, friction: 0.99}));
     rocket.addComponent(new Collidable(BOUNDING_BOX.CIRCULAR, {radius: 35}, true));
 }
@@ -514,6 +561,12 @@ function init() {
     initializeEntities();
     SpritesheetManager.loadSpritesheet("asteroids", "images/asteroidspritesheet.png", 242, 239);
     SpritesheetManager.loadSpritesheet("explosion", "images/explosion.png", 128, 128);
+
+    var rs = new RenderSystem();
+    rs.addAfterRenderCallback(renderScore);
+    SystemManager.addSystem(rs);
+
+    SystemManager.addSystem(new ParticleSystem());
 
     SystemManager.addSystem(new MovementSystem(rocket));
     SystemManager.addSystem(new InputSystem());
@@ -529,9 +582,7 @@ function init() {
     SystemManager.addSystem(new CollisionResolutionSystem());
     SystemManager.addSystem(new ExplosionSystem());
 
-    var rs = new RenderSystem();
-    rs.addAfterRenderCallback(renderScore);
-    SystemManager.addSystem(rs);
+    
 
     /*-----Game Over state-------*/
     var gameOverRender = new RenderSystem();
