@@ -164,7 +164,6 @@ class FiringSystem extends System {
     }
 
     init() {
-        console.log("In init of Firing");
         PubSub.subscribe("keyPress", this.handleKeyPress.bind(this));
     }
 
@@ -383,7 +382,7 @@ class MovementSystem extends System {
     init() {
         this.rotateLeft = false;
         this.rotateRight = false;
-        this.currentDirection = this.left;
+        this.currentDirection1 = this.left;
         PubSub.subscribe("keyDown", this.handleKeyDown.bind(this));
         PubSub.subscribe("keyUp", this.handleKeyUp.bind(this));
         this.rotateEntity(5);

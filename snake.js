@@ -214,25 +214,25 @@ class MovementSystem extends System {
     }
 
     init() {
-        this.currentDirection = this.right;
+        this.currentDirection1 = this.right;
         PubSub.subscribe("keyDown", this.handleKeyDown.bind(this));
     }
 
     handleKeyDown(topic, data) {
-        if (data.key === "up" && this.currentDirection != this.down) {
-            this.currentDirection = this.up;
+        if (data.key === "up" && this.currentDirection1 != this.down) {
+            this.currentDirection1 = this.up;
             this.rotateEntity(270);
         }
-        else if (data.key === "down" && this.currentDirection != this.up) {
-            this.currentDirection = this.down;
+        else if (data.key === "down" && this.currentDirection1 != this.up) {
+            this.currentDirection1 = this.down;
             this.rotateEntity(90);
         }
-        else if (data.key === "left" && this.currentDirection != this.right) {
-            this.currentDirection = this.left;
+        else if (data.key === "left" && this.currentDirection1 != this.right) {
+            this.currentDirection1 = this.left;
             this.rotateEntity(180);
         }
-        else if (data.key === "right" && this.currentDirection != this.left) {
-            this.currentDirection = this.right;
+        else if (data.key === "right" && this.currentDirection1 != this.left) {
+            this.currentDirection1 = this.right;
             this.rotateEntity(0);
         }
     }
@@ -265,7 +265,7 @@ class MovementSystem extends System {
         for (var key in this.relevantEntitiesMap) {
             var entity = this.relevantEntitiesMap[key];
             var gp = entity.components[GridPosition.prototype.constructor.name];
-            var newPos = this.currentDirection(gp.x, gp.y);
+            var newPos = this.currentDirection1(gp.x, gp.y);
             var entityAtNewPos = Grid.getAt(newPos.x, newPos.y);
 
             PubSub.publishSync("snakeMove", {});

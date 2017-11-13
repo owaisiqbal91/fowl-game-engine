@@ -460,7 +460,11 @@ class InputSystem extends System {
             '40': "down",
             '37': "left",
             '39': "right",
-            '32': "space"
+            '32': "space",
+            '87': "w",
+            '65':"a",
+            '83':"s",
+            '68':"d"
         }
     }
 
