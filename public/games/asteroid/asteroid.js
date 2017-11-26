@@ -78,7 +78,7 @@ class RocketSystem extends System {
                     startColor: [255, 0, 0, 1],
                     startColorVariance: [0, 0, 0, 0.1],
                     endColor: [0, 0, 0, 1],
-                    texture: "images/particle.png"
+                    texture: "common/images/particle.png"
                 });
 
                 pec.reset();
@@ -217,7 +217,7 @@ class AsteroidSystem extends System {
                 startColor: [255, 0, 0, 1],
                 startColorVariance: [0, 0, 0, 0.1],
                 endColor: [0, 0, 0, 1],
-                texture: "images/particle.png"
+                texture: "common/images/particle.png"
 			});
 
 			pec.reset();
@@ -330,7 +330,7 @@ var missile;
 function createMissile(initialAngle, x, y) {
 	missile = EntityManager.createEntity("missile");
 	missile.addComponent(new PositionComponent(x, y));
-	missile.addComponent(new RenderComponent(30, 30, "images/fire.png"));
+	missile.addComponent(new RenderComponent(30, 30, "common/images/fire.png"));
 	missile.addComponent(new Collidable(BOUNDING_BOX.CIRCULAR, {radius: 5}, true));
 	missile.addComponent(new Missile((initialAngle % 360)));
 }
@@ -408,13 +408,13 @@ function createAsteroidWithRandomParameters() {
         startColor: [255, 100, 100, 1],
         startColorVariance: [0, 0, 51, 0.1],
         endColor: [0, 0, 0, 1],
-        texture: "images/particle.png"
+        texture: "common/images/particle.png"
     }
 
     //create asteroid system
     asteroid = EntityManager.createEntity("asteroid");
     asteroid.addComponent(new PositionComponent(config.position.x, config.position.y));
-    asteroid.addComponent(new RenderComponent(35, 35, "images/asteroid.png"));
+    asteroid.addComponent(new RenderComponent(35, 35, "common/images/asteroid.png"));
     asteroid.addComponent(new ParticleEmitterComponent(asteroidSystemConfig));
     asteroid.addComponent(new PhysicsComponent(config.physics ? config.physics : {}));
     asteroid.addComponent(new Collidable(BOUNDING_BOX.CIRCULAR, {radius: 15}, true));
@@ -441,7 +441,7 @@ function initializeEntities() {
 
 	sky = EntityManager.createEntity("sky");
     sky.addComponent(new PositionComponent(canvas.width / 2, canvas.height / 2));
-    sky.addComponent(new RenderComponent(canvas.width, canvas.height, "images/transparent.png"));
+    sky.addComponent(new RenderComponent(canvas.width, canvas.height, "common/images/transparent.png"));
     sky.addComponent(new ParticleEmitterComponent(skySystemConfig));
     sky.addComponent(new PhysicsComponent({}));
     sky.addComponent(new Sky());
@@ -472,13 +472,13 @@ function initializeEntities() {
 		startColor: [51, 102, 178.5, 1],
 		startColorVariance: [0, 0, 51, 0.1],
 		endColor: [0, 0, 0, 1],
-		texture: "images/particle.png"
+		texture: "common/images/particle.png"
 	}
 
 
     rocket = EntityManager.createEntity("rocket");
     rocket.addComponent(new PositionComponent(300, 200));
-    rocket.addComponent(new RenderComponent(50, 50, "images/rocket.png"));
+    rocket.addComponent(new RenderComponent(50, 50, "common/images/rocket.png"));
     rocket.addComponent(new ParticleEmitterComponent(rocketFireConfig));
     rocket.addComponent(new PhysicsComponent({}));
     rocket.addComponent(new Collidable(BOUNDING_BOX.CIRCULAR, {radius: 25}, true));

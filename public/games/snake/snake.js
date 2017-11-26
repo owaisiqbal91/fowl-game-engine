@@ -112,14 +112,14 @@ class FoodSystem extends System {
         gp.y = gridY;
         Grid.putAt(gridX, gridY, food);
         var rc = food.components[RenderComponent.prototype.constructor.name];
-        rc.setSrc("images/snake/neon_food.png");
+        rc.setSrc("/common/images/snake/neon_food.png");
         resetFoodTimeout();
         this.rotten = false;
     }
 
     rotTheFood(topic, data) {
         var rc = this.food.components[RenderComponent.prototype.constructor.name];
-        rc.setSrc("images/snake/neon_rotten_food.png");
+        rc.setSrc("/common/images/snake/neon_rotten_food.png");
         this.rotten = true;
     }
 
@@ -171,7 +171,7 @@ class SnakeSegmentSystem extends System {
         for(var i=0; i<3; i++){
             var snakeSegment = EntityManager.createEntity("snakeSegment");
             snakeSegment.addComponent(new PositionComponent(-100, -100));
-            snakeSegment.addComponent(new RenderComponent(Grid.tileWidth, Grid.tileHeight, "images/snake/neon_snake_body.png"));
+            snakeSegment.addComponent(new RenderComponent(Grid.tileWidth, Grid.tileHeight, "/common/images/snake/neon_snake_body.png"));
             snakeSegment.addComponent(new GridPosition(-1, -1));
             snakeSegment.addComponent(new SnakeSegment());
             this.segments.push(snakeSegment);
@@ -336,7 +336,7 @@ function init() {
 
     //initialize entities
     //generate walls, hardcoding for now
-    var wallRenderComponent = new RenderComponent(Grid.tileWidth, Grid.tileHeight, "images/snake/neon_wall.png");
+    var wallRenderComponent = new RenderComponent(Grid.tileWidth, Grid.tileHeight, "/common/images/snake/neon_wall.png");
     for (var i = 0; i < Grid.totalColumns; i++) {
         for (var j = 0; j < Grid.totalRows; j++) {
             if ((i >= 5 && i <= 8 && j == 4)
@@ -356,12 +356,12 @@ function init() {
     //add food and snake head
     var food = EntityManager.createEntity("food");
     food.addComponent(new PositionComponent(0, 0));
-    food.addComponent(new RenderComponent(Grid.tileWidth, Grid.tileHeight, "images/snake/neon_food.png"));
+    food.addComponent(new RenderComponent(Grid.tileWidth, Grid.tileHeight, "/common/images/snake/neon_food.png"));
     food.addComponent(new GridPosition(0, 0));
     food.addComponent(new Food());
     snakeHead = EntityManager.createEntity("snakeHead");
     snakeHead.addComponent(new PositionComponent(Grid.getTile(initialPos.x, initialPos.y).x, Grid.getTile(initialPos.x, initialPos.y).y));
-    snakeHead.addComponent(new RenderComponent(Grid.tileWidth, Grid.tileHeight, "images/snake/neon_snake_head.png"));
+    snakeHead.addComponent(new RenderComponent(Grid.tileWidth, Grid.tileHeight, "/common/images/snake/neon_snake_head.png"));
     snakeHead.addComponent(new GridPosition(initialPos.x, initialPos.y));
     snakeHead.addComponent(new SnakeHead());
     Grid.putAt(initialPos.x, initialPos.y, snakeHead);

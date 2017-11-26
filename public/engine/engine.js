@@ -1080,8 +1080,8 @@ ScreenManager.switchToScreen = function(screen) {
 }
 
 /* --------------------- Game loop -----------------------------------*/
-function startGameLoop(interval){
-    ScreenManager.switchToScreen("default");
+function startGameLoop(interval, screen="default"){
+    ScreenManager.switchToScreen(screen);
     setInterval(game_loop, interval);
 }
 
