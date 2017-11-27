@@ -452,6 +452,7 @@ class InputSystem extends System {
         canvas.addEventListener("keydown", this.handleKeyDown.bind(this), false);
         canvas.addEventListener("keyup", this.handleKeyUp.bind(this), false);
         canvas.addEventListener("keypress", this.handleKeyPress.bind(this), false);
+        canvas.addEventListener("click", this.handleMouseClick.bind(this), false);
     }
 
     init() {
@@ -464,7 +465,9 @@ class InputSystem extends System {
             '87': "w",
             '65':"a",
             '83':"s",
-            '68':"d"
+            '68':"d",
+            '49': "1",
+            '50': "2"
         }
     }
 
@@ -519,6 +522,13 @@ class InputSystem extends System {
         if (entity) {
             PubSub.publish("mouseUp", {"mouseX": mouseX, "mouseY": mouseY, "entity": entity});
         }
+    }
+
+    handleMouseClick(e) {
+        var mouseX = this.getMouseX(e);
+        var mouseY = this.getMouseY(e);
+
+        PubSub.publish("click", {"mouseX": mouseX, "mouseY": mouseY});
     }
 
     getInputEntity(mouseX, mouseY) {
