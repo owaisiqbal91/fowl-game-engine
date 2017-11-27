@@ -2,6 +2,27 @@ Team:
 omiqbal@ncsu.edu
 knielar@ncsu.edu
 
+
+To Run project :
+
+
+install node
+
+run below commands:
+
+npm install
+node server
+
+
+go to:
+
+localhost:3000/gallery
+
+
+Multiplayer-snake:
+Currently 2 players can over network
+1st player to start game will be host and other player user
+
 Alchemy:
 The rules are fire + water = steam, steam + air = cloud, earth + air = dust
 Adding new rules is extremely easy: adding to the json var in the CombiningSystem
@@ -23,3 +44,4 @@ Both players try to beat the high score, a snake wins if the other snake goes ou
 
 External libraries used:
 PubSubJS(for Publish/Subscribe): https://github.com/mroderick/PubSubJS
+

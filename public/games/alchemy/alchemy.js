@@ -139,7 +139,7 @@ class CombiningSystem extends System {
         if (combined) {
             var combinedEntity = EntityManager.createEntity(combined);
             combinedEntity.addComponent(data.entity2.components[PositionComponent.prototype.constructor.name]);
-            combinedEntity.addComponent(new RenderComponent(74, 74, "images/"+combined+".png"));
+            combinedEntity.addComponent(new RenderComponent(74, 74, "/common/images/"+combined+".png"));
             combinedEntity.addComponent(new Input());
             combinedEntity.addComponent(new Draggable());
             combinedEntity.addComponent(new Collidable(BOUNDING_BOX.RECTANGULAR, {}, false));
@@ -180,7 +180,7 @@ var currentOffset = 0;
 function createFixedEntity(name) {
     var entity = EntityManager.createEntity(name);
     entity.addComponent(new PositionComponent(700, currentOffset * 70));
-    entity.addComponent(new RenderComponent(74, 74, "images/" + name + ".png"));
+    entity.addComponent(new RenderComponent(74, 74, "/common/images/" + name + ".png"));
     entity.addComponent(new Input());
     entity.addComponent(new Fixed());
     currentOffset += 1;
