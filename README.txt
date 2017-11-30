@@ -42,6 +42,13 @@ Multiplayer Snake:
 Control Green by Arrow Keys, Pink by WASD
 Both players try to beat the high score, a snake wins if the other snake goes out of bounds or collides with anyone's body
 
+Aliens & Astronauts:
+Click the mouse to move to any adjacent square
+Click yourself to not move
+Astronauts die when an alien lands on its square
+Aliens win when all astronauts are dead
+Astronauts win when the turn becomes 20
+
 External libraries used:
 PubSubJS(for Publish/Subscribe): https://github.com/mroderick/PubSubJS
 
