@@ -16,7 +16,7 @@ node server
 
 go to:
 
-localhost:3000/gallery
+localhost:3000
 
 
 Multiplayer-snake:

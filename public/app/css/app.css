@@ -1,0 +1,53 @@
+#main-back-img {
+	width: 100%;
+	height: auto;
+}
+
+#gallery {
+	
+}
+
+#intro {
+	padding: 0;
+	background: black;
+}
+
+#engine-intro {
+	font-size: 35px;
+    padding-top: 93px;
+    text-align: center;
+    color: aliceblue;
+    font-weight: 100;
+}
+
+.left-pane {
+	background: white;
+	min-height: 1000px;
+	padding: 0;
+    margin: 0;
+}
+
+.left-pane nav{
+	margin-left: 20px;
+}
+
+.left-pane .nav-link {
+	border-radius: 0;
+}
+
+.well {
+	padding: 10px;
+}
+
+.affix {
+      top: 20px;
+      z-index: 9999 !important;
+}
+
+.container{
+	padding-bottom: 200px;
+}
+
+.game-row {
+	margin: 15px;
+}

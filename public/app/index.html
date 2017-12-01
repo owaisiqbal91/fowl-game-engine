@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+	    <meta charset="UTF-8">
+	    <title>Fowl Game Engine</title>
+	    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+	     <link rel="stylesheet" href="/app/css/app.css">
+	</head>
+	<body>
+		
+		<nav class="navbar navbar-expand-lg navbar-light bg-light">
+		  <a class="navbar-brand" href="#">Fowl Engine</a>
+		  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+		    <span class="navbar-toggler-icon"></span>
+		  </button>
+		  <div class="collapse navbar-collapse" id="navbarNav">
+		    <ul class="navbar-nav">
+		      
+		      <li class="nav-item active">
+		        <a class="nav-link" href="/">Home<span class="sr-only">(current)</span></a>
+		      </li>
+		      <li class="nav-item">
+		        <a class="nav-link disabled" href="/#about">About</a>
+		      </li>
+		      <li class="nav-item">
+		        <a class="nav-link disabled" href="/#gallery">Gallery</a>
+		      </li>
+		      <li class="nav-item">
+		        <a class="nav-link disabled" href="/documentation">Documentation</a>
+		      </li>
+		      <li class="nav-item">
+		        <a class="nav-link disabled" href="/#download">Download</a>
+		      </li>
+		    </ul>
+		  </div>
+		</nav>
+		<section class="jumbotron" id="intro">
+			<div class="row">
+				<div class="col-md-8">
+					<img id="main-back-img" src="/app/images/back.png">
+				</div>
+				<div class="col-md-4">
+					<p id="engine-intro">Fowl - A Javascript based Game Engine</p>
+				</div>
+			</div>
+		</section>
+		<div class="container">
+			<div id="about">
+				<h3>What is Fowl?</h3>
+				<hr/>
+				<p>Fowl is a pure Javascript based Game Engine. It follows ECS architectural pattern.</p>
+				<p>Read more about it <a href="/documentation">here</a></p>
+				<br/>
+			</div>
+			<div id="gallery">
+				<p>Below are some games built using Fowl.</p><br/>
+				<h3>Fowl Game Engine Gallery</h3>
+				<hr/>
+				<div class="row game-row">
+					<div class="col-md-6">
+						<div class="card">
+						  <div class="card-body">
+						    <h4 class="card-title">Alchemy</h4>
+						    <h6 class="card-subtitle mb-2 text-muted"></h6>
+						    <p class="card-text">Alchemy Game</p>
+						    <a href="game/alchemy" style="font-size: 30px;">Play</a><br/>
+						  </div>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="card">
+						  <div class="card-body">
+						    <h4 class="card-title">Snake</h4>
+						    <h6 class="card-subtitle mb-2 text-muted"></h6>
+						    <p class="card-text">Snake Game</p>
+						    <a href="game/snake" style="font-size: 30px;">Play</a><br/>
+						  </div>
+						</div>
+					</div>	
+				</div>
+				<div class="row game-row">
+					<div class="col-md-6">
+						<div class="card">
+						  <div class="card-body">
+						    <h4 class="card-title">Snake</h4>
+						    <h6 class="card-subtitle mb-2 text-muted"></h6>
+						    <p class="card-text">Snake Game</p>
+						    <a href="game/asteroids" style="font-size: 30px;">Play</a><br />
+						  </div>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="card">
+						  <div class="card-body">
+						    <h4 class="card-title">Multiplayer Snake</h4>
+						    <h6 class="card-subtitle mb-2 text-muted"></h6>
+						    <p class="card-text">Multiplayer Snake Game</p>
+							<a href="game/multiplayer_snake" style="font-size: 30px;">Play</a><br />
+						  </div>
+						</div>
+					</div>
+				</div>
+				<div class="row game-row">
+					<div class="col-md-6">
+						<div class="card">
+						  <div class="card-body">
+						    <h4 class="card-title">Multiplayer Snake</h4>
+						    <h6 class="card-subtitle mb-2 text-muted"></h6>
+						    <p class="card-text">Multiplayer Snake Game</p>
+							<a href="game/aliens_astronauts" style="font-size: 30px;">Play</a>
+						  </div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<br/>
+			<div id="download">
+				<h3>Download</h3>
+				<hr/>
+				<p>Get a copy of Fowl Game Engine from <a href="https://github.com/owaisiqbal91/fowl-game-engine">here</a></p><br/>
+				<h3>License</h3>
+				<hr/>
+				<p>MIT License</p>
+			</div>
+		</div>
+
+
+
+		<script src="https://code.jquery.com/jquery-3.2.1.js"
+  integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE="
+  crossorigin="anonymous"></script>
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+		
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+
+	</body>
+</html>

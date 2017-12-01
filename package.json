@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "A javascript based game engine",
   "dependencies": {
+    "bootstrap": "^4.0.0-alpha.6",
     "express": "^4.15.2",
     "socket.io": "^2.0.4"
   }

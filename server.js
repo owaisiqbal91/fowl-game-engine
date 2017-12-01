@@ -8,8 +8,8 @@ var public_path = path.join(__dirname, 'public');
 
 app.use('/', express.static(public_path));
 
-app.get('/gallery', function(req, res){
-  res.sendFile('games/gallery.html', { root: public_path});
+app.get('/documentation', function(req, res){
+  res.sendFile('app/documentation.html', { root: public_path});
 });
 
 app.get('/game/:id', function(req, res){
@@ -19,6 +19,10 @@ app.get('/game/:id', function(req, res){
 
 app.get('/game-data', function(req, res){
   res.send(game);
+});
+
+app.get('/', function(req, res){
+  res.sendFile('app/index.html', { root: public_path});
 });
 
 var game = {
