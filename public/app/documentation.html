@@ -1,87 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-	    <meta charset="UTF-8">
-	    <title>Fowl Game Engine</title>
-	    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
-	     <link rel="stylesheet" href="/app/css/app.css">
-	</head>
-	<body>
-		
-		<nav class="navbar navbar-expand-lg navbar-light bg-light">
-		  <a class="navbar-brand" href="#">Fowl Engine</a>
-		  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-		    <span class="navbar-toggler-icon"></span>
-		  </button>
-		  <div class="collapse navbar-collapse" id="navbarNav">
-		    <ul class="navbar-nav">
-		      
-		      <li class="nav-item active">
-		        <a class="nav-link" href="/">Home</a>
-		      </li>
-		      <li class="nav-item">
-		        <a class="nav-link disabled" href="/#gallery">Gallery</a>
-		      </li>
-		      <li class="nav-item">
-		        <a class="nav-link disabled" href="/documentation">Documentation<span class="sr-only">(current)</span></a>
-		      </li>
-		      <li class="nav-item">
-		        <a class="nav-link disabled" href="https://github.com/owaisiqbal91/fowl-game-engine">Download</a>
-		      </li>
-		    </ul>
-		  </div>
-		</nav>
-		<div class="container">
-			<div id="documentation">
-				<div class="row">
-					<div class="col-md-3 left-pane">
-						<ul class="nav nav-pills flex-column">
-						  <li class="nav-item">
-						  	<a class="nav-link active" href="#engine-design">
-						      Engine Design
-						    </a>
-						    <a class="nav-link" href="#engine-core">
-						      Engine Core
-						    </a>
-						    <a class="nav-link" href="#canvas-manager">
-						      CanvasManager
-						    </a>
-						    <a class="nav-link" href="#scene">
-						      Scene
-						    </a>
-						    <a class="nav-link" href="#system">
-						      System
-						    </a>
-						    <a class="nav-link" href="#entity">
-						      Entity
-						    </a>
-						    <a class="nav-link" href="#components">
-						      Components
-						    </a>
-						    <a class="nav-link" href="#particle-system">
-						      Particle System
-						    </a>
-						    <a class="nav-link" href="#persistence">
-						      Persistence
-						    </a>
-						  </li>
-						</ul>
-					</div>
-					<div class="col-md-9">
-						<div class="well" id="engine-design">
-							<h3>Engine Design</h3>
-							<p>Fowl Game Engine is based on Entity Component System(ECS) architectural pattern.</p>
-							<p>It follows the principle of Composition over Inheritance and thus, provides greater flexibility in terms of adding new custom Component or Entity.
-							<p>Below is the high level design of the Game Engine.</p>
-							<center><img src="/app/images/hierarchy.jpg"></center>
-							<p>You can read more about ECS <a href="https://en.wikipedia.org/wiki/Entity%E2%80%93component%E2%80%93system">here</a>
+<head>
+    <meta charset="UTF-8">
+    <title>Fowl Game Engine</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css"
+          integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+    <link rel="stylesheet" href="/app/css/app.css">
+</head>
+<body>
 
-							</a>
-						</div>
-						<div class="well" id="engine-core">
-							<h3>Engine Core</h3>
-							<p>Below is the list of pre-defined components Fowl Game Engine has</p>
-							<div class="card card-body bg-light">
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#">Fowl Engine</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+
+            <li class="nav-item active">
+                <a class="nav-link" href="/">Home</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled" href="/#gallery">Gallery</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled" href="/documentation">Documentation<span
+                        class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled" href="https://github.com/owaisiqbal91/fowl-game-engine">Download</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+<div class="container">
+    <div id="documentation">
+        <div class="row">
+            <div class="col-md-3 left-pane">
+                <ul class="nav nav-pills flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#engine-design">
+                            Engine Design
+                        </a>
+                        <a class="nav-link" href="#features">
+                            Features
+                        </a>
+                        <a class="nav-link" href="#how-it-works">
+                            How It Works
+                        </a>
+                        <a class="nav-link" href="#engine-core">
+                            Engine Core
+                        </a>
+                        <a class="nav-link" href="#getting-started">
+                            Getting started
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-md-9">
+                <div class="well" id="engine-design">
+                    <h3>Engine Design</h3>
+                    <p>Fowl Game Engine is based on Entity Component System(ECS) architectural pattern.</p>
+                    <p>It follows the principle of Composition over Inheritance and thus provides greater flexibility in
+                        terms of adding new custom Component or Entity.
+                    <p>Below is the high level design of the Game Engine.</p>
+                    <center><img src="/app/images/hierarchy.jpg"></center>
+                    <p>You can read more about ECS <a
+                            href="https://en.wikipedia.org/wiki/Entity%E2%80%93component%E2%80%93system">here</a>
+
+                        </a></p>
+                </div>
+                <div class="well" id="features">
+                    <h3>Features</h3>
+                    <p>
+                    <ul>
+                        <li>HTML5 Canvas</li>
+                        <li>Collision detection</li>
+                        <li>Easy switching of screens</li>
+                        <li>Animation</li>
+                        <li>Physics</li>
+                        <li>Particle System</li>
+                        <li>Input</li>
+                        <li>Spritesheet</li>
+                    </ul>
+                    </p>
+                </div>
+                <div class="well" id="how-it-works">
+                    <h3>How It Works</h3>
+                    <p>The Fowl Game Engine is a pure ECS system. What this means is that Entities do not contain any
+                        additional information other than an identifier. The Components hold only data while the logic
+                        is written in the Systems.</p>
+                    <p>Attaching and detaching different components will uniquely determine the bitset signature for an
+                        entity. It is this bitset signature that very efficiently (because of bitset calculations)
+                        identifies the relevant entities to be processed for a system. Each system specifies the
+                        components it is interested in. At each game update loop, the engine cycles through these
+                        systems and runs their logic against their relevant entities.</p>
+                </div>
+                <div class="well" id="engine-core">
+                    <h3>Engine Core</h3>
+                    <p>Below is the list of pre-defined components Fowl Game Engine has</p>
+                    <div class="card card-body bg-light">
 <pre>
 
 var components = [
@@ -94,74 +113,103 @@ var components = [
     "ParticleEmitterComponent"
 ];
 </pre>
-							</div>
-							<div>
+                    </div>
+                </div>
+                <div class="well" id="getting-started">
+                    <h3>Getting started</h3>
+                    <p>Let's learn by checking out how by the position component in the core engine works. The engine
+                        uses the same ECS framework for all of its core components and systems.</p>
 
-							</div>
-							<div>
-								
-							</div>
-						</div>
-						<div class="well" id="canvas-manager">
-							<h3>Canvas Manager</h3>
-							<p>Here will be documenation for Canvas Manager</p>
-							<div>
-								
-							</div>
-						</div>
-						<div class="well" id="scene">
-							<h3>Scene</h3>
-							<p>Here will be documenation for Scene</p>
-							<div>
-								
-							</div>
-						</div>
-						<div class="well" id="system">
-							<h3>System</h3>
-							<p>Here will be documenation for System</p>
-							<div>
-								
-							</div>
-						</div>
-						<div class="well" id="entity">
-							<h3>Entity</h3>
-							<p>Here will be documenation for Entity</p>
-							<div>
-								
-							</div>
-						</div>
-						<div class="well" id="components">
-							<h3>Components</h3>
-							<p>Here will be documenation for Components</p>
-							<div>
-								
-							</div>
-						</div>
-						<div class="well" id="particle-system">
-							<h3>Particle System</h3>
-							<p>Here will be documenation for Particle System</p>
-							<div>
-								
-							</div>
-						</div>
-						<div class="well" id="persistence">
-							<h3>Persistence</h3>
-							<p>Here will be documenation for Persistence</p>
-							<div>
-								
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
+                    <p>We first define the component we want to use, and the data that would be required to operate on
+                        that component.</p>
 
-		<script src="https://code.jquery.com/jquery-3.2.1.js"
-  integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE="
-  crossorigin="anonymous"></script>
+                    <div class="card card-body bg-light">
+<pre>
+function PositionComponent(x, y, z = 0) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+}</pre>
+                    </div>
 
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
-		
-		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
-	</body>
+                    <p><br />Next, we define the system that will be making use of this component:</p>
+
+                    <div class="card card-body bg-light">
+<pre>
+class RenderSystem extends System {
+    constructor() {
+        var signature = BitUtils.getBitEquivalentForComponent(["PositionComponent", "RenderComponent"]);
+        super(signature);
+    }
+
+    init(){
+    //system initialization
+    }
+
+    //update(){
+    //will be called on every game loop update
+
+//this is how you retrieve all the entities that have both PositionComponent and RenderComponent
+    var entities = Object.values(this.relevantEntitiesMap);
+    }
+ }</pre>
+                    </div>
+
+                    <p><br />In the constructor, we have to define the components the system is interested.</p>
+
+                    <p>We now define an entity that will be using this component and attach the components to it:</p>
+
+                    <div class="card card-body bg-light">
+<pre>
+var entity = EntityManager.createEntity("mario");
+ entity.addComponent(new PositionComponent(10,20));
+ entity.addComponent(new RenderComponent(50, 50, "./mario.png"));</pre>
+                    </div>
+
+                    <p><br />Next, let's wire everything up and run the game:</p>
+
+                    <div class="card card-body bg-light">
+<pre>
+ function init() {
+    //You have to define your components first
+    ComponentManager.initialize(["PositionComponent"]);
+
+    var entity = EntityManager.createEntity("mario");
+ entity.addComponent(new PositionComponent(10,20));
+ entity.addComponent(new RenderComponent(50, 50, "./mario.png"));
+
+    //you have to add your systems so the engine can call them
+    SystemManager.addSystem(new RenderSystem());
+
+    //call the engine's game loop with the milliseconds per frame
+    startGameLoop(30);
+}</pre>
+                    </div>
+
+                    <p><br />Just one last thing, you need to initialize the canvas with your canvas id:</p>
+
+                    <div class="card card-body bg-light">
+<pre>
+CanvasManager.initializeCanvas("alchemy");</pre>
+                    </div>
+
+                    <p><br />That's it! That's all it takes to get a game up and running :)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.2.1.js"
+        integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE="
+        crossorigin="anonymous"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js"
+        integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js"
+        integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+</body>
 </html>
