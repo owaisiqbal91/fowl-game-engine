@@ -6,7 +6,7 @@ Attaching and detaching different components will uniquely determine the bitset 
 
 ## See it in action
 
-[Sample games](https://fowl.herokuapp.com)
+[Sample games](https://fowl.herokuapp.com/#gallery)
 
 ## Check out the documentation
 
@@ -29,11 +29,12 @@ You are done. Hit http://localhost:3000/#gallery to start playing games
 
 ### Prerequisites
 
-What things you need to install the software and how to install them
+What things you need to install:
 
 ```
 If you have not installed NodeJS yet, make sure you install it before you could start anything else.
 ```
+* [NodeJS](https://nodejs.org)
 
 ### Games
 
